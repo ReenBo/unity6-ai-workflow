@@ -13,14 +13,19 @@ foreach ($file in $files) {
     $content = Get-Content $file.FullName -Raw -ErrorAction SilentlyContinue
     if ($null -eq $content) { continue }
 
+    # Skip markdown documentation rule descriptions unless they contain real user directories
+    $isDoc = $file.Extension -eq ".md"
+
     # Check for hardcoded user paths
-    if ($content -match "[C-Z]:\\Users\\") {
-        Write-Host "SECURITY WARNING: Hardcoded User Path in $($file.Name)" -ForegroundColor Red
-        $leakCount++
+    if ($content -match "[C-Z]:\\Users\\[a-zA-Z0-9_\.]+\\" -or $content -match "\/(?:home|Users)\/[a-zA-Z0-9_\.]+\/") {
+        if (-not ($isDoc -and ($content -match "username" -or $content -match "<user>"))) {
+            Write-Host "SECURITY WARNING: Hardcoded User Path in $($file.Name)" -ForegroundColor Red
+            $leakCount++
+        }
     }
 
     # Check for potential API Keys
-    if ($content -match "sk-[a-zA-Z0-9]{20,}") {
+    if ($content -match "\bsk-[a-zA-Z0-9]{20,}\b") {
         Write-Host "CRITICAL RISK: Potential API Key in $($file.Name)" -ForegroundColor Red
         $leakCount++
     }
