@@ -1,11 +1,11 @@
 # Subagent Role: Execution Logger
 
-> **Purpose:** Generates structured Markdown execution logs in `.agents/logs/` upon completion of work by any subagent or skill.
+> **Purpose:** Generates structured Markdown execution logs in `.foragents/logs/` upon completion of work by any subagent or skill.
 
 ---
 
 ## Log Format
-Every file is generated using the pattern `.agents/logs/log_YYYYMMDD_HHMMSS_<role>_<task>.md` and contains:
+Every file is generated using the pattern `.foragents/logs/log_YYYYMMDD_HHMMSS_<role>_<task>.md` and contains:
 
 1. **Header**: Timestamp, subagent role, Task ID.
 2. **Inputs**: Concise description of received input context.

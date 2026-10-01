@@ -28,3 +28,13 @@ public void HealthService_TakeDamage_DecreasesHealth()
     Assert.AreEqual(80f, service.CurrentHealth.Value);
 }
 ```
+
+---
+
+## 🚦 Execution Condition (Developer Interview)
+
+The Test Engineer subagent executes conditionally based on the choice made in Step 0 (Developer Interview):
+- **If tests skipped**: Step 6 is recorded as `SKIPPED (as requested by developer in initial interview)` without running batchmode.
+- **If fast CI requested**: Executes `ci/run-all-checks.ps1` for static checks.
+- **If full tests requested**: Executes `unity-test-runner` skill in batchmode.
+

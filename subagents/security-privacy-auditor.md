@@ -40,4 +40,4 @@ The subagent **CANNOT** close a task autonomously if sensitive data or external 
 
 ## 📤 Output Result
 - Developer approval dialogue.
-- Inspection report written to `.agents/logs/log_YYYYMMDD_*_SecurityAuditor.md`.
+- Inspection report written to `.foragents/logs/log_YYYYMMDD_*_SecurityAuditor.md`.

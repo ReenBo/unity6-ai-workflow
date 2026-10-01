@@ -10,26 +10,27 @@ When receiving new tasks, the **Primary Agent** routes work through a step-by-st
 
 | Step | Subagent | Input Context | Output Result |
 | :--- | :--- | :--- | :--- |
-| **0. Task Analysis & Branching** | `Task Analyzer` | Text / Screenshot / Link | **Clarifying Questions + Git Branch Creation + Tracker Entry** |
+| **0. Task Analysis & Branching** | `Task Analyzer` | Text / Screenshot / Link | **Clarifying Questions + CI/CD & Testing Interview + Git Branch Creation + Tracker Entry in `.foragents/PROJECT_MEMORY.md`** |
 | **0.1. AI Evolution** | `Workflow Creator` | Agent/Skill Registry + New Task | Generation of new Skills (`SKILL.md`) and Subagents |
 | **1. Architecture & Design** | `Code Architect` | Specs + `rules/unity6-vcontainer-architecture.md` | C# Contracts (Interfaces/DTOs) + Implementation Spec |
 | **2. Code Implementation** | `Code Writer` | Architect Contract + Target C# File | POCO Class Implementation |
 | **3. Audit & Code Review** | `Code Reviewer` | `git diff` + `rules/unity6-performance-gc.md` | Audit Report (Pass/Fail) + Refinements |
 | **4. Security & PII Protection** | `Security Auditor` | `git diff` + Secrets/Personal Data | **Human-in-the-Loop Approval Protocol** |
 | **5. Auto-Debugger** | `Auto-Fixer` | Error Stack Trace / Failed Test | Surgical Fix (Maximum 2 autonomous retries) |
-| **6. Automated Testing** | `Test Engineer` | Native Unity Test Runner Execution | EditMode / PlayMode Test Runs |
-| **7. Learning (/learn Protocol)** | `Knowledge Learner` | Developer Feedback & Corrections | New Rule Entry in `PROJECT_MEMORY.md` |
-| **8. Execution Logging** | `Execution Logger` | Pipeline Results | Tier 2 Task Log in `.agents/logs/log_YYYYMMDD_*.md` |
+| **6. Automated Testing** | `Test Engineer` | Interview Preference + Native Test Runner | EditMode / PlayMode Test Runs (or **SKIPPED** per Developer Interview) |
+| **7. Learning (/learn Protocol)** | `Knowledge Learner` | Developer Feedback & Corrections | New Rule Entry in `.foragents/PROJECT_MEMORY.md` |
+| **8. Execution Logging** | `Execution Logger` | Pipeline Results | Tier 2 Task Log in `.foragents/logs/log_YYYYMMDD_*.md` |
 
 ---
 
-## 🛡️ 2. Five Security & Autonomy Mechanics
+## 🛡️ 2. Six Security & Autonomy Mechanics
 
 1. **`Git State Guard` (Rollback Snapshots)**: Before any major change, a localized `git stash` or `ai-checkpoint` is created for 1-click rollback.
 2. **`Self-Correction Protocol` (Auto-Debugger)**: On compilation or test failures, the agent performs up to 2 surgical fixes based on stack traces before escalating to human.
 3. **`Human-in-the-Loop Protocol` (PII Approval)**: All operations involving personal data, secrets, or hardcoded paths require explicit developer confirmation.
 4. **`Feedback Loop & /learn` (Continuous Learning)**: Developer feedback is immediately persisted into project memory and never repeated.
-5. **`Loop & Token Budget Guard` (Iteration Limits)**: A hard limit of 5 retry loops per subagent execution to prevent run-away token expenditure.
+5. **`Developer Interview Protocol` (CI/CD & Testing Scope)**: At Step 0, the agent conducts an interactive interview asking whether CI/CD builds or unit/playmode tests are required for the task, avoiding unnecessary heavy test overhead.
+6. **`Loop & Token Budget Guard` (Iteration Limits)**: A hard limit of 5 retry loops per subagent execution to prevent run-away token expenditure.
 
 ---
 
@@ -40,14 +41,17 @@ When receiving new tasks, the **Primary Agent** routes work through a step-by-st
 2. **Handoff by Contract**:
    - Communication between Architect and Writer agents occurs strictly via C# interfaces (`interface IMyService`).
 3. **Project Memory Usage**:
-   - Agents read `PROJECT_MEMORY.md` to instantly acquire the latest architectural context without scanning hundreds of source files.
+   - Agents read `.foragents/PROJECT_MEMORY.md` to instantly acquire the latest architectural context without scanning hundreds of source files.
+4. **Package vs Project Data Isolation**:
+   - The `.agents` submodule package strictly contains reusable, project-agnostic workflow tools, rules, skills, and subagent profiles.
+   - All host project data, active task status, and execution logs must be stored in `.foragents/` at the root of the host project (`.foragents/PROJECT_MEMORY.md`, `.foragents/logs/`) and committed to the host project repository.
 
 ---
 
 ## 📊 4. Three-Tier Logging Architecture
 
-- **🟢 Tier 1 (`PROJECT_MEMORY.md`)**: High-level architectural status and active feature tracking in Git.
-- **🟡 Tier 2 (`.agents/logs/log_*.md`)**: Human-readable Markdown task protocols in Git for Code Review and Pull Requests.
+- **🟢 Tier 1 (`.foragents/PROJECT_MEMORY.md`)**: High-level architectural status and active feature tracking in host project Git.
+- **🟡 Tier 2 (`.foragents/logs/log_*.md`)**: Human-readable Markdown task protocols in host project Git for Code Review and Pull Requests.
 - **🔴 Tier 3 (`brain/logs`)**: Raw system execution traces of Antigravity IDE tools (stored locally).
 
 ---

@@ -11,7 +11,7 @@ Before starting major AI work:
 2. If there are uncommitted changes:
    - Save temporary stash: `git stash save "AI-Checkpoint-PreTask-<TaskID>"` OR
    - Create local temporary branch: `git checkout -b ai-checkpoint/<TaskID>`.
-3. Record checkpoint name in `.agents/logs/`.
+3. Record checkpoint name in `.foragents/logs/`.
 
 ---
 

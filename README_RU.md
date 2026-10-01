@@ -16,16 +16,17 @@
 
 ## 🎯 Цели и Архитектурная Идеология
 
-1. **Мультимодальный Анализ ТЗ и Ветки (Task Analyzer)**: Прием задач в форме текста, ссылок или **скриншотов**, интервьюирование разработчика, авто-создание Git-ветки (`feature/...`) и трекинг в `PROJECT_MEMORY.md`.
+1. **Мультимодальный Анализ ТЗ и Ветки (Task Analyzer)**: Прием задач в форме текста, ссылок или **скриншотов**, интервьюирование разработчика (включая опрос по необходимости CI/CD и тестов), авто-создание Git-ветки (`feature/...`) и трекинг в `.foragents/PROJECT_MEMORY.md`.
 2. **Единый Кроссплатформенный Python Runner (`ci/runner.py`)**: 100% одинаковое исполнение аудитов VContainer, PII-утечек и GC-аллокаций на **Windows**, **macOS** и **Linux**.
 3. **Инфраструктурная Независимость (Provider-Agnostic CI/CD)**: Единый скрипт проверок `ci/run-all-checks.ps1` / `ci/run-all-checks.sh` / `ci/runner.py` с готовыми шаблонами под **GitHub Actions**, **GitLab CI**, **Bitbucket Pipelines** и **Azure DevOps**.
 4. **Безопасность и Контрольные Точки (Git State Guard)**: Автоматическое создание `git stash` / `ai-checkpoint` перед крупными изменениями для отката в 1 клик.
-5. **Синхронизация Памяти (Memory Sync)**: Автоматическое синхронизирование `PROJECT_MEMORY.md` из `git status` и `git diff`.
+5. **Синхронизация Памяти (Memory Sync)**: Автоматическое синхронизирование `.foragents/PROJECT_MEMORY.md` из `git status` и `git diff`.
 6. **Защита Данных и Согласование (Security Auditor)**: Субагент `Security Auditor` гарантирует отсутствие утечек персональных данных (PII), локальных путей и секретных API-ключей с обязательным согласованием с разработчиком.
 7. **Авто-Отладка и Прогон Тестов (Auto-Fixer & Unity Test Runner)**: Автономная локализация багов по стек-трейсам (до 2 попыток) и headless-прогон тестов Unity.
 8. **Обучение и Запоминание (Knowledge Learner /learn)**: Мгновенная фиксация замечаний разработчика в память проекта.
 9. **Экономия Токенов (Context Isolation)**: Передача между субагентами только C# контрактов (интерфейсов) и лимитирование контекстных окон.
-10. **Трехуровневая Система Логирования (Triple-Tier Logging)**: Четкое разделение информации для разработчиков (Tier 2 Markdown), агентов (Tier 1 Memory) и системных дампов IDE (Tier 3).
+10. **Трехуровневая Система Логирования (Triple-Tier Logging)**: Четкое разделение информации для разработчиков (Tier 2 Markdown в `.foragents/logs/`), агентов (Tier 1 Memory в `.foragents/PROJECT_MEMORY.md`) и системных дампов IDE (Tier 3).
+11. **Изоляция Данных Пакет/Проект**: Пакет `.agents` сохраняет чистую логику и инструменты, а проектные данные и протоколы пишутся в папку `.foragents/` хост-репозитория.
 
 ---
 
@@ -98,9 +99,9 @@ Unity6-AI-Workflow/
 │   ├── vcontainer-auditor/                # Авто-проверка DI связок
 │   ├── ui-builder-validator/              # Проверка UI Framework & CSS rules
 │   ├── memory-gc-profiler/                # Поиск аллокаций в Update/Tick и NativeArray
-│   └── execution-logger-skill/            # Формирование отчетов Tier 2 в logs/
+│   └── execution-logger-skill/            # Формирование отчетов Tier 2 в .foragents/logs/
 │
-├── logs/                               # Хранилище отчетов Tier 2 (Task Protocols)
+├── logs/                               # Шаблоны и схемы Tier 2 отчетов (проектные логи пишутся в .foragents/logs/)
 │   ├── README.md                          # Спецификация формата отчетов
 │   └── schema_execution_log.json          # JSON Schema для валидации логов
 │

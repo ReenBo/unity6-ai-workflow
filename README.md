@@ -16,16 +16,17 @@ Ecosystem of global/project rules, self-evolving subagents (Workflow Creator), d
 
 ## 🎯 Core Goals & Architectural Ideology
 
-1. **Multimodal Task Analysis & Branching (Task Analyzer)**: Accepts tasks as text, links, or **screenshots**, conducts requirement clarification interviews, auto-creates Git feature branches (`feature/...`), and tracks progress in `PROJECT_MEMORY.md`.
+1. **Multimodal Task Analysis & Branching (Task Analyzer)**: Accepts tasks as text, links, or **screenshots**, conducts requirement clarification interviews (including CI/CD and testing scope interview), auto-creates Git feature branches (`feature/...`), and tracks progress in `.foragents/PROJECT_MEMORY.md`.
 2. **Cross-Platform Python Runner (`ci/runner.py`)**: 100% consistent execution of VContainer, PII leak, and GC allocation audits across **Windows**, **macOS**, and **Linux**.
 3. **Provider-Agnostic CI/CD**: Unified check runner `ci/run-all-checks.ps1` / `ci/run-all-checks.sh` / `ci/runner.py` with ready-to-use templates for **GitHub Actions**, **GitLab CI**, **Bitbucket Pipelines**, and **Azure DevOps**.
 4. **Security & Checkpoint Rollback (Git State Guard)**: Automatic creation of `git stash` / `ai-checkpoint` before major refactoring tasks for 1-click rollback.
-5. **Memory Synchronization (Memory Sync)**: Automatic updating of `PROJECT_MEMORY.md` from `git status` and `git diff`.
+5. **Memory Synchronization (Memory Sync)**: Automatic updating of `.foragents/PROJECT_MEMORY.md` from `git status` and `git diff`.
 6. **Data Privacy & Human-in-the-Loop (Security Auditor)**: Ensures zero leaks of personal identifiable information (PII), absolute paths, or secret API keys with explicit developer approval required.
 7. **Auto-Debugging & Test Execution (Auto-Fixer & Unity Test Runner)**: Autonomous bug localization based on stack traces (up to 2 retries) and headless Unity test execution.
 8. **Feedback Loop & Learning (Knowledge Learner /learn)**: Immediate persistence of developer feedback and preferences into project memory.
 9. **Token Budgeting (Context Isolation)**: Information handoff strictly via C# interfaces and isolated subagent context windows.
-10. **Three-Tier Logging Architecture**: Clear separation of data for developers (Tier 2 Markdown), agents (Tier 1 Memory), and IDE system traces (Tier 3).
+10. **Three-Tier Logging Architecture**: Clear separation of data for developers (Tier 2 Markdown in `.foragents/logs/`), agents (Tier 1 Memory in `.foragents/PROJECT_MEMORY.md`), and IDE system traces (Tier 3).
+11. **Package vs Project Data Isolation**: The `.agents` package remains clean and reusable across any project, while project memory and execution logs are stored in `.foragents/` at the root of the host repository.
 
 ---
 
@@ -102,9 +103,9 @@ Unity6-AI-Workflow/
 │   ├── vcontainer-auditor/                # VContainer DI compliance auditor
 │   ├── ui-builder-validator/              # UI Framework & USS stylesheet validator
 │   ├── memory-gc-profiler/                # Garbage allocation profiler for Tick() loops
-│   └── execution-logger-skill/            # Tier 2 execution report generator
+│   └── execution-logger-skill/            # Tier 2 execution report generator for .foragents/logs/
 │
-├── logs/                               # Tier 2 Report Storage (Task Protocols)
+├── logs/                               # Tier 2 Report Templates & Schemas (project logs go to .foragents/logs/)
 │   ├── README.md                          # Report format specification (English)
 │   └── schema_execution_log.json          # JSON Schema for log validation
 │

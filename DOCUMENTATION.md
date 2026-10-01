@@ -36,29 +36,31 @@ The **Unity 6 AI Workflow** package is a production-ready ecosystem of rules, su
 ```mermaid
 graph TD
     User["Developer (Human)"] --> TaskAnalyzer["1. Task Analyzer (Spec / Screenshot / Link)"]
-    TaskAnalyzer --> Branch["2. Auto-Create Git Branch + PROJECT_MEMORY.md Entry"]
+    TaskAnalyzer --> Branch["2. Interview (Spec + CI/CD/Tests) + Branch + .foragents/PROJECT_MEMORY.md Entry"]
     Branch --> StateGuard["3. Git State Guard (Rollback Checkpoint Creation)"]
     StateGuard --> Architect["4. Code Architect (C# Interface Isolation)"]
     Architect --> Writer["5. Code Writer (POCO Implementation)"]
     Writer --> Reviewer["6. Code Reviewer & GC Profiler (Diff Audit)"]
     Reviewer --> Security["7. Security Auditor (PII Inspection + Approval)"]
-    Security --> Fixer["8. Auto-Fixer & Unity Test Runner (Auto-Debugging)"]
-    Fixer --> Logs["9. Execution Logger (Tier 2 Report written to logs/)"]
+    Security --> Fixer["8. Auto-Fixer & Unity Test Runner (Auto-Debugging if selected)"]
+    Fixer --> Logs["9. Execution Logger (Tier 2 Report written to .foragents/logs/)"]
 ```
 
 ### Key Mechanics:
 1. **Multimodal Task Analysis**: Accepts specs as text, Jira/GitHub links, or **UI/console screenshots**.
-2. **Dual Shell & Python Runner**: 100% cross-platform script execution across Windows, macOS, and Linux.
-3. **Provider-Agnostic CI/CD**: Pre-configured templates for GitHub Actions, GitLab CI, Bitbucket, and Azure DevOps.
-4. **Self-Learning (`/learn`)**: Instant persistence of developer feedback into project memory.
-5. **Meta-Agent (`Workflow Creator`)**: Autonomous generation of new skills and roles "on the fly" matching new project needs.
+2. **CI/CD & Testing Interview**: At Step 0, interviews the developer on whether testing/builds are required (skip tests to save time / fast CI audit / full Unity test runner).
+3. **Data Isolation (.foragents)**: Keeps the `.agents` package clean and reusable; all project memory and logs are stored in `.foragents/` at the root of the host project and tracked in project Git.
+4. **Dual Shell & Python Runner**: 100% cross-platform script execution across Windows, macOS, and Linux.
+5. **Provider-Agnostic CI/CD**: Pre-configured templates for GitHub Actions, GitLab CI, Bitbucket, and Azure DevOps.
+6. **Self-Learning (`/learn`)**: Instant persistence of developer feedback into project memory `.foragents/PROJECT_MEMORY.md`.
+7. **Meta-Agent (`Workflow Creator`)**: Autonomous generation of new skills and roles "on the fly" matching new project needs.
 
 ---
 
 ## 3. Module Map: Subagents & Skills
 
 ### 🤖 Specialized Subagents (`subagents/`):
-* `task-analyzer.md` — Task spec analyzer, screenshot processor, clarification interview conductor, and Git branch orchestrator.
+* `task-analyzer.md` — Task spec analyzer, screenshot processor, clarification interview conductor, CI/CD interview, and Git branch orchestrator.
 * `git-state-guard.md` — Repository state defender (creates `git stash` / `ai-checkpoint`).
 * `code-architect.md` — C# contract and interface architect.
 * `code-writer.md` — Isolated C# POCO code implementer.
@@ -66,18 +68,19 @@ graph TD
 * `security-privacy-auditor.md` — PII security inspector enforcing **Human-in-the-Loop Protocol**.
 * `auto-fixer.md` — Autonomous compilation and test error debugger (up to 2 attempts).
 * `workflow-creator.md` — Meta-agent for skill and subagent profile generation.
-* `test-engineer.md` — Unit and Integration test engineer.
-* `execution-logger.md` — Pipeline execution logger.
+* `test-engineer.md` — Unit and Integration test engineer (respects Developer Interview choice).
+* `execution-logger.md` — Pipeline execution logger in `.foragents/logs/`.
 
 ### 🧬 Specialized Skills (`skills/`):
-* `task-tracker` — Task card management and Git branch switching.
-* `memory-sync` — Auto-syncing `PROJECT_MEMORY.md` from `git status` / `git diff`.
+* `task-tracker` — Task card management and Git branch switching in `.foragents/PROJECT_MEMORY.md`.
+* `memory-sync` — Auto-syncing `.foragents/PROJECT_MEMORY.md` from `git status` / `git diff`.
 * `knowledge-learner` — Developer feedback persistence via `/learn`.
 * `security-pii-scanner` — Scanner for secret keys, PII, and `C:\Users\` paths.
 * `unity-test-runner` — Headless Unity Test Runner execution in `batchmode`.
-* `vcontainer-auditor` — VContainer DI registration auditor.
+* `ui-builder-validator` — UI Toolkit compliance audit (element names and SMACSS rules).
 * `memory-gc-profiler` — Garbage allocation profiler for `Tick()` loops and `NativeArray` objects.
 * `workflow-evolver` — Meta-skill for generating new skills.
+* `execution-logger-skill` — Automated Tier 2 task execution reports in `.foragents/logs/`.
 
 ---
 
@@ -85,8 +88,8 @@ graph TD
 
 Logs are separated into 3 tiers for developer clarity and agent token efficiency:
 
-* **🟢 Tier 1 (`PROJECT_MEMORY.md`)**: High-level architectural status and active feature tracking stored in Git.
-* **🟡 Tier 2 (`.agents/logs/log_*.md`)**: Human-readable Markdown task protocols stored in Git for **Code Review during Pull Requests**.
+* **🟢 Tier 1 (`.foragents/PROJECT_MEMORY.md`)**: High-level architectural status and active feature tracking stored in host project Git.
+* **🟡 Tier 2 (`.foragents/logs/log_*.md`)**: Human-readable Markdown task protocols stored in host project Git for **Code Review during Pull Requests**.
 * **🔴 Tier 3 (`brain/logs/`)**: Raw execution traces of Antigravity IDE tools stored locally per developer.
 
 ---

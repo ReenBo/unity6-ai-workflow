@@ -36,29 +36,31 @@
 ```mermaid
 graph TD
     User["Разработчик (Human)"] --> TaskAnalyzer["1. Task Analyzer (Прием ТЗ / Скриншот / Ссылка)"]
-    TaskAnalyzer --> Branch["2. Авто-создание Git-ветки + Запись в PROJECT_MEMORY.md"]
+    TaskAnalyzer --> Branch["2. Интервью (ТЗ + CI/CD/Тесты) + Ветка + Запись в .foragents/PROJECT_MEMORY.md"]
     Branch --> StateGuard["3. Git State Guard (Создание снапшота отката)"]
     StateGuard --> Architect["4. Code Architect (Выделение C# интерфейсов)"]
     Architect --> Writer["5. Code Writer (POCO имплементация)"]
     Writer --> Reviewer["6. Code Reviewer & GC Profiler (Аудит diff)"]
     Reviewer --> Security["7. Security Auditor (Проверка PII + Согласование)"]
-    Security --> Fixer["8. Auto-Fixer & Unity Test Runner (Авто-отладка тестов)"]
-    Fixer --> Logs["9. Execution Logger (Запись отчета Tier 2 в logs/)"]
+    Security --> Fixer["8. Auto-Fixer & Unity Test Runner (Авто-отладка тестов при необходимости)"]
+    Fixer --> Logs["9. Execution Logger (Запись отчета Tier 2 в .foragents/logs/)"]
 ```
 
 ### Ключевые Механики:
 1. **Мультимодальный прием ТЗ**: Принимает задачи текстом, ссылками на Jira/GitHub или **скриншотами макетов/ошибок**.
-2. **Dual Shell & Python Runner**: 100% кроссплатформенная работа скриптов на Windows, macOS и Linux.
-3. **Provider-Agnostic CI/CD**: Готовые конфигурации под GitHub Actions, GitLab CI, Bitbucket и Azure DevOps.
-4. **Самообучение (`/learn`)**: Мгновенная фиксация замечаний разработчика в память проекта.
-5. **Мета-Агент (`Workflow Creator`)**: Автоматическое создание новых навыков и ролей "на лету" под новые задачи проекта.
+2. **Интервью по CI/CD и тестам**: На шаге 0 модель проводит опрос разработчика о желании запускать тесты и CI/CD проверки (пропустить для экономии времени / быстрый CI аудит / полный прогон тестов).
+3. **Изоляция данных (.foragents)**: Пакет `.agents` остается чистым и универсальным; память проекта и логи задач хранятся в `.foragents/` хост-репозитория и коммитятся в проект.
+4. **Dual Shell & Python Runner**: 100% кроссплатформенная работа скриптов на Windows, macOS и Linux.
+5. **Provider-Agnostic CI/CD**: Готовые конфигурации под GitHub Actions, GitLab CI, Bitbucket и Azure DevOps.
+6. **Самообучение (`/learn`)**: Мгновенная фиксация замечаний разработчика в память проекта `.foragents/PROJECT_MEMORY.md`.
+7. **Мета-Агент (`Workflow Creator`)**: Автоматическое создание новых навыков и ролей "на лету" под новые задачи проекта.
 
 ---
 
 ## 3. Карта Модулей: Субагенты и Навыки
 
 ### 🤖 Специализированные Субагенты (`subagents/`):
-* `task-analyzer.md` — Аналитик ТЗ, скриншотов, интерфейс уточнения и оркестратор Git-веток.
+* `task-analyzer.md` — Аналитик ТЗ, скриншотов, интерфейс уточнения, интервью по тестам и оркестратор Git-веток.
 * `git-state-guard.md` — Защитник состояния (создает `git stash` / `ai-checkpoint`).
 * `code-architect.md` — Проектировщик C# контрактов и интерфейсов.
 * `code-writer.md` — Исполнитель POCO-кода в изолированном контексте.
@@ -66,18 +68,19 @@ graph TD
 * `security-privacy-auditor.md` — Проверка безопасности PII и интерфейс **Human-in-the-Loop**.
 * `auto-fixer.md` — Автономный фикс ошибок компиляции и упавших тестов (до 2 попыток).
 * `workflow-creator.md` — Мета-агент генерации новых навыков и ролей.
-* `test-engineer.md` — Инженер Unit и Integration тестов.
-* `execution-logger.md` — Протоколист итогов вызовов.
+* `test-engineer.md` — Инженер Unit и Integration тестов (с учетом выбора в интервью).
+* `execution-logger.md` — Протоколист итогов вызовов в `.foragents/logs/`.
 
 ### 🧬 Специализированные Навыки (`skills/`):
-* `task-tracker` — Управление ветками и статусом задач в памяти.
-* `memory-sync` — Авто-синхронизация `PROJECT_MEMORY.md` из `git status` / `git diff`.
+* `task-tracker` — Управление ветками и статусом задач в `.foragents/PROJECT_MEMORY.md`.
+* `memory-sync` — Авто-синхронизация `.foragents/PROJECT_MEMORY.md` из `git status` / `git diff`.
 * `knowledge-learner` — Запоминание новых правил по команде `/learn`.
 * `security-pii-scanner` — Сканер личных путей `C:\Users\`, токенов и API-ключей.
 * `unity-test-runner` — Headless прогон Unity Test Runner в режиме `batchmode`.
-* `vcontainer-auditor` — Проверка DI-связок и выявление MonoBehaviour-антипаттернов.
+* `ui-builder-validator` — Аудит UI Toolkit: уникальные имена интерактивных элементов, SMACSS USS правила.
 * `memory-gc-profiler` — Поиск мусорных аллокаций в `Tick()` и вызовов `NativeArray`.
 * `workflow-evolver` — Мета-навык конструирования новых навыков.
+* `execution-logger-skill` — Авто-генерация протоколов выполнения задач Tier 2 в `.foragents/logs/`.
 
 ---
 
@@ -85,8 +88,8 @@ graph TD
 
 Логи разделены на 3 уровня для удобства разработчиков и агентов:
 
-* **🟢 Tier 1 (`PROJECT_MEMORY.md`)**: Память актуального архитектурного состояния проекта и список активных задач. Хранится в Git.
-* **🟡 Tier 2 (`.agents/logs/log_*.md`)**: Читаемые Markdown-отчеты по каждой фиче (Inputs, Outputs, Checklists, Summary). Хранятся в Git для удобного **Code Review при Pull Request**.
+* **🟢 Tier 1 (`.foragents/PROJECT_MEMORY.md`)**: Память актуального архитектурного состояния проекта и список активных задач. Хранится в Git хост-проекта.
+* **🟡 Tier 2 (`.foragents/logs/log_*.md`)**: Читаемые Markdown-отчеты по каждой фиче (Inputs, Outputs, Checklists, Summary). Хранятся в `.foragents/logs/` хост-проекта для удобного **Code Review при Pull Request**.
 * **🔴 Tier 3 (`brain/logs/`)**: Сырые системные трассировки вызовов Antigravity IDE. Хранятся локально у каждого разработчика.
 
 ---
