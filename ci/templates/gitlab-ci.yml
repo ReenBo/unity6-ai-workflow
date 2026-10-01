@@ -1,0 +1,12 @@
+stages:
+  - audit
+
+ai_workflow_audit:
+  stage: audit
+  tags:
+    - windows
+  script:
+    - powershell -ExecutionPolicy Bypass -File .\.agents\ci\run-all-checks.ps1 -ProjectPath .
+  only:
+    - main
+    - merge_requests

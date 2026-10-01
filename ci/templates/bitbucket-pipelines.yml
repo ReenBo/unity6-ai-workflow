@@ -1,0 +1,9 @@
+pipelines:
+  default:
+    - step:
+        name: AI Workflow Audit
+        runs-on:
+          - self.hosted
+          - windows
+        script:
+          - powershell -ExecutionPolicy Bypass -File .\.agents\ci\run-all-checks.ps1 -ProjectPath .

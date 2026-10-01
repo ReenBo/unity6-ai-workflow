@@ -1,0 +1,9 @@
+trigger:
+  - main
+
+pool:
+  vmImage: 'windows-latest'
+
+steps:
+  - powershell: .\.agents\ci\run-all-checks.ps1 -ProjectPath .
+    displayName: 'Run AI Workflow CI Audit'

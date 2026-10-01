@@ -1,0 +1,9 @@
+{
+  "hooks": [
+    {
+      "name": "pre-commit-audit",
+      "event": "pre-commit",
+      "script": "hooks/pre-commit-audit.ps1"
+    }
+  ]
+}

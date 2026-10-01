@@ -1,0 +1,19 @@
+name: Unity 6 AI Workflow CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  ai-workflow-audit:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Run AI Workflow CI Checks
+        shell: powershell
+        run: |
+          .\.agents\ci\run-all-checks.ps1 -ProjectPath .
