@@ -49,11 +49,13 @@ graph TD
 ### Key Mechanics:
 1. **Multimodal Task Analysis**: Accepts specs as text, Jira/GitHub links, or **UI/console screenshots**.
 2. **CI/CD & Testing Interview**: At Step 0, interviews the developer on whether testing/builds are required (skip tests to save time / fast CI audit / full Unity test runner).
-3. **Data Isolation (.foragents)**: Keeps the `.agents` package clean and reusable; all project memory and logs are stored in `.foragents/` at the root of the host project and tracked in project Git.
-4. **Dual Shell & Python Runner**: 100% cross-platform script execution across Windows, macOS, and Linux.
-5. **Provider-Agnostic CI/CD**: Pre-configured templates for GitHub Actions, GitLab CI, Bitbucket, and Azure DevOps.
-6. **Self-Learning (`/learn`)**: Instant persistence of developer feedback into project memory `.foragents/PROJECT_MEMORY.md`.
-7. **Meta-Agent (`Workflow Creator`)**: Autonomous generation of new skills and roles "on the fly" matching new project needs.
+3. **Data Isolation & Autonomous Setup (`.foragents`)**: Keeps the `.agents` package clean and reusable; all project memory and logs are stored in `.foragents/` at the root of the host project and tracked in project Git. If `.foragents/` is absent, it is automatically created from template.
+4. **Develop-First Git Standard**: The default active and integration branch is `develop`. All feature branches are branched from `develop`, and all Pull Requests target `develop`.
+5. **Dual Shell & Python Runner**: 100% cross-platform script execution across Windows, macOS, and Linux.
+6. **Provider-Agnostic CI/CD**: Pre-configured templates for GitHub Actions, GitLab CI, Bitbucket, and Azure DevOps.
+7. **Self-Learning (`/learn`)**: Instant persistence of developer feedback into project memory `.foragents/PROJECT_MEMORY.md`.
+8. **Meta-Agent (`Workflow Creator`)**: Autonomous generation of new skills and roles "on the fly" matching new project needs.
+
 
 ---
 
@@ -122,9 +124,10 @@ Execute the 1-click installer:
 
 ### Workflow A: Implementing a Feature from Screenshot or Spec
 1. Send the agent a screenshot of a UI layout or feature description.
-2. `Task Analyzer` asks 2-3 clarifying questions and checks out branch `feature/task-102-ui-panel`.
+2. `Task Analyzer` ensures `.foragents/` exists, asks 2-3 clarifying questions, and checks out branch `feature/task-102-ui-panel` from `develop`.
 3. `Code Architect` and `Code Writer` generate C# POCO classes and USS stylesheets.
-4. `Code Reviewer` audits the diff, and `Execution Logger` generates a Tier 2 report in `.agents/logs/`.
+4. `Code Reviewer` audits the diff, and `Execution Logger` generates a Tier 2 report in `.foragents/logs/`.
+5. Pull Request is created targeting `develop`.
 
 ### Workflow B: Safe Refactoring of Major Subsystems
 1. Command the agent: *"Refactor MiningService to follow VContainer POCO rules"*.
@@ -133,12 +136,13 @@ Execute the 1-click installer:
 
 ### Workflow C: Teaching AI New Project Rules
 1. Tell the agent: *"Resources.Load is forbidden in our project, use Addressables!"*.
-2. Invoke `/learn`. The rule is automatically saved to `PROJECT_MEMORY.md` and respected across all future sessions.
+2. Invoke `/learn`. The rule is automatically saved to `.foragents/PROJECT_MEMORY.md` and respected across all future sessions.
 
 ---
 
 ## 7. Best Practices
 
-1. **Perform Code Review via Tier 2 Logs**: When opening a Pull Request, inspect the generated Markdown report `.agents/logs/log_*.md` — it details all AI design decisions and audit passes.
+1. **Perform Code Review via Tier 2 Logs**: When opening a Pull Request into `develop`, inspect the generated Markdown report `.foragents/logs/log_*.md` — it details all AI design decisions and audit passes.
 2. **Preserve Human-in-the-Loop**: When security risks are flagged, review the proposed masking scheme before approving.
 3. **Execute `ci/runner.py` Locally**: Running `python .agents/ci/runner.py` locally guarantees 100% build pass rates on CI servers.
+

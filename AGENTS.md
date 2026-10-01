@@ -23,7 +23,7 @@ When receiving new tasks, the **Primary Agent** routes work through a step-by-st
 
 ---
 
-## 🛡️ 2. Six Security & Autonomy Mechanics
+## 🛡️ 2. Seven Security & Autonomy Mechanics
 
 1. **`Git State Guard` (Rollback Snapshots)**: Before any major change, a localized `git stash` or `ai-checkpoint` is created for 1-click rollback.
 2. **`Self-Correction Protocol` (Auto-Debugger)**: On compilation or test failures, the agent performs up to 2 surgical fixes based on stack traces before escalating to human.
@@ -31,6 +31,8 @@ When receiving new tasks, the **Primary Agent** routes work through a step-by-st
 4. **`Feedback Loop & /learn` (Continuous Learning)**: Developer feedback is immediately persisted into project memory and never repeated.
 5. **`Developer Interview Protocol` (CI/CD & Testing Scope)**: At Step 0, the agent conducts an interactive interview asking whether CI/CD builds or unit/playmode tests are required for the task, avoiding unnecessary heavy test overhead.
 6. **`Loop & Token Budget Guard` (Iteration Limits)**: A hard limit of 5 retry loops per subagent execution to prevent run-away token expenditure.
+7. **`Autonomous Project Setup Guard` (.foragents Auto-Creation)**: If `.foragents/` or `.foragents/PROJECT_MEMORY.md` is missing in the host project root, the workflow automatically initializes it from `.agents/PROJECT_MEMORY_TEMPLATE.md` without requiring manual developer setup.
+
 
 ---
 
@@ -45,6 +47,8 @@ When receiving new tasks, the **Primary Agent** routes work through a step-by-st
 4. **Package vs Project Data Isolation**:
    - The `.agents` submodule package strictly contains reusable, project-agnostic workflow tools, rules, skills, and subagent profiles.
    - All host project data, active task status, and execution logs must be stored in `.foragents/` at the root of the host project (`.foragents/PROJECT_MEMORY.md`, `.foragents/logs/`) and committed to the host project repository.
+5. **Autonomous Project Initialization**:
+   - If `.foragents/` or `.foragents/PROJECT_MEMORY.md` does not exist in the host project, agents automatically execute `.agents/scripts/init-foragents.ps1` (or create `.foragents/`, `.foragents/logs/`, and initialize `PROJECT_MEMORY.md` from `PROJECT_MEMORY_TEMPLATE.md`) before executing any task.
 
 ---
 
@@ -61,3 +65,15 @@ When receiving new tasks, the **Primary Agent** routes work through a step-by-st
 1. **VContainer POCO Only**: It is strictly forbidden to inherit pure logic systems, managers, or controllers from `MonoBehaviour`. All logic is written in plain C# (POCO) and managed via VContainer `LifetimeScope`.
 2. **Zero-Allocation Execution**: Inside `ITickable.Tick()` (replacing `Update()`), all `new` allocations, LINQ queries, and boxing are strictly prohibited.
 3. **Async & Reactive**: Asynchronous workflows must use **UniTask** with obligatory `CancellationToken` passing. Event subscriptions must use **R3**.
+
+---
+
+## 🌿 6. Git Branching & Pull Request Standards
+
+1. **Default & Base Branch (`develop`)**:
+   - In both the `ai-workflow` repository and host projects, `develop` is the default active and integration branch.
+   - All feature, fix, and refactoring branches (`feature/*`, `fix/*`, `refactor/*`) MUST branch from the latest `develop` (`git checkout develop && git pull origin develop`).
+2. **Pull Request Target (`develop`)**:
+   - All Pull Requests and merges MUST target `develop`.
+   - The `main` branch is reserved strictly for stable release tags.
+

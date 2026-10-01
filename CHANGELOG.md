@@ -5,7 +5,16 @@ All notable changes to the `Unity6-AI-Workflow` package will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-10-01
+
+### Added
+- **Autonomous `.foragents` Initialization**: Automatic creation of `.foragents/`, `.foragents/logs/`, `README.md`, and instantiation of `PROJECT_MEMORY.md` from template whenever missing in the host project. Added cross-platform scripts `scripts/init-foragents.ps1` and `scripts/init-foragents.sh`.
+- **Develop-First Git Standard**: Formalized `develop` as the default development branch and target branch for all Pull Requests across both the `ai-workflow` repository and host projects.
+- **Developer Interview Protocol**: Interactive requirement clarification in Step 0 asking whether CI/CD audits or native Unity tests should be executed or skipped.
+- **Package vs Project Data Isolation**: Strict separation of generic workflow engine in `.agents` and host project memory/logs in `.foragents/`.
+
 ## [1.0.0] - 2026-10-01
+
 
 ### Added
 - **Multimodal Task Analyzer**: Task processing pipeline supporting text, Jira/GitHub URLs, and UI/console screenshots.
