@@ -1,0 +1,31 @@
+{
+  "name": "unity6-ai-workflow",
+  "version": "1.0.0",
+  "description": "Production-ready AI workflow ecosystem, subagents, skills, and cross-platform CI/CD automation for Unity 6 applications.",
+  "main": "AGENTS.md",
+  "scripts": {
+    "audit": "python ci/runner.py",
+    "audit:ps": "powershell -ExecutionPolicy Bypass -File ci/run-all-checks.ps1",
+    "audit:sh": "bash ci/run-all-checks.sh",
+    "install-hooks": "powershell -ExecutionPolicy Bypass -File hooks/install-hooks.ps1",
+    "install-hooks:sh": "bash hooks/install-hooks.sh"
+  },
+  "keywords": [
+    "unity6",
+    "vcontainer",
+    "antigravity",
+    "ai-agents",
+    "subagents",
+    "unitask",
+    "r3",
+    "ci-cd",
+    "code-review",
+    "pii-scanner"
+  ],
+  "author": "Reen_Bo",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ReenBo/unity6-ai-workflow.git"
+  }
+}

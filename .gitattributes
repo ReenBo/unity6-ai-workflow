@@ -1,0 +1,13 @@
+# Normalize line endings for Cross-Platform Compatibility (Windows, macOS, Linux)
+* text=auto eol=lf
+
+# Force LF for all Bash scripts to prevent ^M bad interpreter errors on Linux/macOS
+*.sh text eol=lf
+hooks/pre-commit text eol=lf
+
+# Force CRLF for PowerShell scripts on Windows if required, or keep LF
+*.ps1 text=auto
+
+# Documentation and JSON
+*.md text eol=lf
+*.json text eol=lf
