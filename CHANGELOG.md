@@ -5,6 +5,12 @@ All notable changes to the `Unity6-AI-Workflow` package will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-10-20
+
+### Added
+- **Prohibition of Comments in Code**: Introduced mandatory rule `rules/code-style-no-comments.md` strictly prohibiting inline and block comments in source code; code must be self-documenting via clear naming, types, and architectural separation.
+- **English-Only Execution Logging**: Formally standardized that all Tier 2 execution log files in `.foragents/logs/` must be authored strictly in English. Updated `execution-logger-skill` and `templates/log_template.md`.
+
 ## [1.1.0] - 2026-10-01
 
 ### Added

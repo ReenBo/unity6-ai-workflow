@@ -7,13 +7,13 @@
 
 ---
 
-## 📥 Input Arguments (Входные Данные)
+## 📥 Input Arguments
 - **Target Files**: {{TARGET_FILES}}
 - **Input Scope / Prompt**: {{INPUT_PROMPT}}
 
 ---
 
-## 📤 Output Artifacts & Changes (Выходной Результат)
+## 📤 Output Artifacts & Changes
 - **Created / Modified Files**:
   - `{{FILE_1}}`
   - `{{FILE_2}}`
@@ -21,5 +21,5 @@
 
 ---
 
-## 🎯 Final Result Description (Сухая Выжимка)
+## 🎯 Final Result Summary
 {{FINAL_RESULT_SUMMARY}}

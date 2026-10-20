@@ -55,7 +55,7 @@ When receiving new tasks, the **Primary Agent** routes work through a step-by-st
 ## 📊 4. Three-Tier Logging Architecture
 
 - **🟢 Tier 1 (`.foragents/PROJECT_MEMORY.md`)**: High-level architectural status and active feature tracking in host project Git.
-- **🟡 Tier 2 (`.foragents/logs/log_*.md`)**: Human-readable Markdown task protocols in host project Git for Code Review and Pull Requests.
+- **🟡 Tier 2 (`.foragents/logs/log_*.md`)**: Human-readable Markdown task protocols in host project Git for Code Review and Pull Requests. **Must be written strictly in English.**
 - **🔴 Tier 3 (`brain/logs`)**: Raw system execution traces of Antigravity IDE tools (stored locally).
 
 ---
@@ -65,6 +65,7 @@ When receiving new tasks, the **Primary Agent** routes work through a step-by-st
 1. **VContainer POCO Only**: It is strictly forbidden to inherit pure logic systems, managers, or controllers from `MonoBehaviour`. All logic is written in plain C# (POCO) and managed via VContainer `LifetimeScope`.
 2. **Zero-Allocation Execution**: Inside `ITickable.Tick()` (replacing `Update()`), all `new` allocations, LINQ queries, and boxing are strictly prohibited.
 3. **Async & Reactive**: Asynchronous workflows must use **UniTask** with obligatory `CancellationToken` passing. Event subscriptions must use **R3**.
+4. **Strict Prohibition of Code Comments**: Writing inline or block comments (`//`, `/* ... */`) in source code is strictly prohibited (`rules/code-style-no-comments.md`). The code must be self-documenting through expressive naming, domain types, and clean architectural decomposition.
 
 ---
 
