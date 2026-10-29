@@ -5,7 +5,7 @@ param (
 
 Write-Host "=== VContainer & POCO Rules Audit ===" -ForegroundColor Cyan
 
-$csFiles = Get-ChildItem -Path $Path -Filter "*.cs" -Recurse | Where-Object { $_.FullName -notmatch "Library|Temp|Packages" }
+$csFiles = Get-ChildItem -Path $Path -Filter "*.cs" -Recurse | Where-Object { $_.FullName -notmatch "Library|Temp|Packages|\.agents" }
 
 $monoCount = 0
 $pocoCount = 0

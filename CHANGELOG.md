@@ -5,6 +5,13 @@ All notable changes to the `Unity6-AI-Workflow` package will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.1] - 2026-10-29
+
+### Fixed
+- **Pre-Commit Hook Paths Resolution**: Fixed path resolution in `pre-commit-audit.ps1` and `pre-commit-audit.sh` so audit scripts are correctly located whether running within a host project (via `.agents` submodule) or standalone.
+- **VContainer Audit Scope**: Excluded `.agents` directory from scanning in `audit-vcontainer.ps1` to prevent false positive matches in external workflow files.
+- **Dual Mode Hook Installer**: Updated `install-hooks.ps1` and `install-hooks.sh` to support both submodule (`.agents`) and standalone hook dispatching.
+
 ## [1.2.0] - 2026-10-20
 
 ### Added

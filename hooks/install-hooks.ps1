@@ -12,7 +12,11 @@ if (-not (Test-Path "$TargetGitFolder/hooks")) {
 
 $preCommitScript = @"
 #!/bin/sh
-powershell -ExecutionPolicy Bypass -File ./.agents/hooks/pre-commit-audit.ps1
+if [ -f "./.agents/hooks/pre-commit-audit.ps1" ]; then
+    powershell -ExecutionPolicy Bypass -File ./.agents/hooks/pre-commit-audit.ps1
+elif [ -f "./hooks/pre-commit-audit.ps1" ]; then
+    powershell -ExecutionPolicy Bypass -File ./hooks/pre-commit-audit.ps1
+fi
 "@
 
 Set-Content -Path "$TargetGitFolder/hooks/pre-commit" -Value $preCommitScript
