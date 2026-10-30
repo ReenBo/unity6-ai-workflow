@@ -1,11 +1,13 @@
 {
   "name": "unity6-ai-workflow",
-  "version": "1.2.1",
+  "version": "1.3.0",
   "description": "Production-ready AI workflow ecosystem, subagents, skills, and cross-platform CI/CD automation for Unity 6 applications.",
   "main": "AGENTS.md",
   "scripts": {
     "init-foragents": "powershell -ExecutionPolicy Bypass -File scripts/init-foragents.ps1",
     "init-foragents:sh": "bash scripts/init-foragents.sh",
+    "test:unity": "unity test",
+    "recompile": "unity recompile",
     "audit": "python ci/runner.py",
     "audit:ps": "powershell -ExecutionPolicy Bypass -File ci/run-all-checks.ps1",
     "audit:sh": "bash ci/run-all-checks.sh",

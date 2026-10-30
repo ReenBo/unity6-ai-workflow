@@ -8,12 +8,14 @@
 
 ```mermaid
 graph TD
-    BuildError["Unity Compilation Error / Failed Test"] --> ParseLog["1. Parse un-truncated Stack Trace & Error Message"]
-    ParseLog --> Diagnose["2. Localize Target File & Line Number"]
-    Diagnose --> SurgicalFix["3. Apply Surgical Fix"]
-    SurgicalFix --> ReCheck["4. Re-run Automated Checks (Attempt N of 2)"]
-    ReCheck -->|Success| Complete["Complete Execution & Write Tier 2 Log"]
-    ReCheck -->|Fail >= 2| Escalate["Escalate to Developer with Cause Analysis"]
+    Trigger["C# File Edited or Compilation Failed"] --> Recompile["1. Trigger Live Compilation: unity recompile"]
+    Recompile --> CheckStatus["2. Check Console Status: unity cmd console status"]
+    CheckStatus -->|compilationFailed: false| Verified["Success: Zero Errors & Verified Build"]
+    CheckStatus -->|compilationFailed: true| FetchErrors["3. Fetch Isolated Errors: unity cmd console get --level error"]
+    FetchErrors --> Localize["4. Localize File & Line from Structured JSON"]
+    Localize --> SurgicalFix["5. Apply Surgical Fix (Attempt N of 2)"]
+    SurgicalFix --> Recompile
+    CheckStatus -->|Fail >= 2 attempts| Escalate["Escalate to Developer with Cause Analysis"]
 ```
 
 ---
@@ -22,6 +24,7 @@ graph TD
 
 - **Maximum 2 Attempts**: A hard limit of 2 automated fix attempts per issue to prevent run-away token expenditure.
 - **No Superficial Symptom Patches**: Prohibited from "fixing" errors by commenting out failing test assertions, wrapping calls in silent `catch {}` blocks, or returning dummy fallback objects.
+- **Token Efficiency via Structured JSON**: Query only targeted error entries through `unity cmd console get --level error` rather than ingesting entire raw `Editor.log` streams. Clear console via `unity cmd console clear` upon resolution.
 
 ---
 

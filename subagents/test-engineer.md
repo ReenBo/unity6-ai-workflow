@@ -34,7 +34,9 @@ public void HealthService_TakeDamage_DecreasesHealth()
 ## 🚦 Execution Condition (Developer Interview)
 
 The Test Engineer subagent executes conditionally based on the choice made in Step 0 (Developer Interview):
-- **If tests skipped**: Step 6 is recorded as `SKIPPED (as requested by developer in initial interview)` without running batchmode.
+- **If tests skipped**: Step 6 is recorded as `SKIPPED (as requested by developer in initial interview)` without running tests.
 - **If fast CI requested**: Executes `ci/run-all-checks.ps1` for static checks.
-- **If full tests requested**: Executes `unity-test-runner` skill in batchmode.
+- **If full tests requested**:
+  - When Unity Editor is active (`unity status`): Executes `unity test --mode EditMode` directly in the warm editor (1-2 seconds, zero lockfile issues).
+  - When Unity Editor is closed: Executes headless runner via `unity test` or fallback batchmode.
 

@@ -5,6 +5,18 @@ All notable changes to the `Unity6-AI-Workflow` package will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2026-10-30
+
+### Added
+- **Mandatory Unity CLI Standard**: Introduced `rules/unity-cli-standard.md` requiring AI subagents and skills to leverage the official standalone `unity` CLI and `com.unity.pipeline` for live compilation (`unity recompile`), instant EditMode/PlayMode testing (`unity test`), and structured console inspection (`unity cmd console status`).
+- **Comprehensive Unity CLI Architectural Guide**: Added `docs/unity-cli-integration.md` detailing the paradigm shift from legacy cold batchmode to warm RPC editor automation, token budget optimization, command reference, and Model Context Protocol (MCP) client configuration.
+- **Official Model Context Protocol (MCP) Setup**: Standardized native editor connection for Antigravity, Cursor, and Claude Code via `unity mcp configure`.
+
+### Changed
+- **`Auto-Fixer` Subagent**: Refactored self-correction protocol to execute live recompilation via `unity recompile` and fetch targeted errors via `unity cmd console get --level error` (saving ~99.8% token context versus ingesting raw `Editor.log` streams).
+- **`Test Engineer` Subagent & `unity-test-runner` Skill**: Rewrote test runner scripts (`run-unity-tests.ps1` and `run-unity-tests.sh`) to prioritize warm execution via `unity test` (1-2 seconds) with zero lockfile collisions, falling back to version-detected headless mode only when the editor is closed.
+- **Master Orchestrator (`AGENTS.md`)**: Elevated Unity CLI to the 8th core autonomy and security mechanic (`Unity CLI & Hot Pipeline Guard`).
+
 ## [1.2.1] - 2026-10-29
 
 ### Fixed
