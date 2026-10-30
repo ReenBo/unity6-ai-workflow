@@ -1,26 +1,49 @@
 #!/usr/bin/env bash
-# Bash Script: Cross-Platform Unity Test Runner with Unity CLI & Fallback (macOS/Linux)
+# Bash Script: Dual-Mode Unity Test Runner (Hot Editor via Pipeline or Headless)
 
 PROJECT_PATH="${1:-.}"
 TEST_MODE="${2:-EditMode}"
 FILTER="${3:-}"
 RESULTS_FILE="${4:-$PROJECT_PATH/logs/unity_test_results.xml}"
 
-echo "=== Cross-Platform Unity Test Runner ($TEST_MODE) ==="
+echo "=== Unity Test Runner ($TEST_MODE) ==="
 
 mkdir -p "$(dirname "$RESULTS_FILE")"
+FULL_PROJECT_PATH="$(cd "$PROJECT_PATH" && pwd)"
 
 # 1. Primary Route: Official Unity CLI
 if command -v unity &> /dev/null; then
     echo "[+] Using official Unity CLI: $(which unity)"
-    CLI_ARGS=("test" "$PROJECT_PATH" "--mode" "$TEST_MODE" "--output" "$RESULTS_FILE")
-    if [ -n "$FILTER" ]; then
-        CLI_ARGS+=("--filter" "$FILTER")
+    
+    # Check if Unity Editor is running for this project
+    EDITOR_RUNNING=false
+    if STATUS_OUTPUT=$(unity status --format json 2>/dev/null); then
+        if echo "$STATUS_OUTPUT" | grep -qi "\"state\": \"ready\""; then
+            EDITOR_RUNNING=true
+        fi
     fi
-    unity "${CLI_ARGS[@]}"
-    EXIT_CODE=$?
-    echo "Unity Tests Execution Finished. ExitCode: $EXIT_CODE"
-    exit $EXIT_CODE
+
+    if [ "$EDITOR_RUNNING" = true ]; then
+        echo "[⚡ HOT EXECUTION] Running tests inside active Unity Editor via Pipeline..."
+        CMD_ARGS=("cmd" "test" "run" "--mode" "$TEST_MODE")
+        if [ -n "$FILTER" ]; then
+            CMD_ARGS+=("--filter" "$FILTER")
+        fi
+        unity "${CMD_ARGS[@]}"
+        EXIT_CODE=$?
+        echo "Hot Editor Tests Execution Finished. ExitCode: $EXIT_CODE"
+        exit $EXIT_CODE
+    else
+        echo "[HEADLESS EXECUTION] Editor not running. Spawning managed test run via Unity CLI..."
+        CLI_ARGS=("test" "$FULL_PROJECT_PATH" "--mode" "$TEST_MODE" "--output" "$RESULTS_FILE")
+        if [ -n "$FILTER" ]; then
+            CLI_ARGS+=("--filter" "$FILTER")
+        fi
+        unity "${CLI_ARGS[@]}"
+        EXIT_CODE=$?
+        echo "Unity Tests Execution Finished. ExitCode: $EXIT_CODE"
+        exit $EXIT_CODE
+    fi
 fi
 
 # 2. Fallback Route: Direct Unity Editor Executable Detection

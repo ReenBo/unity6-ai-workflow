@@ -1,4 +1,4 @@
-# PowerShell Script: Unity Test Runner with Unity CLI & Fallback
+# PowerShell Script: Dual-Mode Unity Test Runner (Hot Editor via Pipeline or Headless)
 param (
     [string]$ProjectPath = ".",
     [string]$TestMode = "EditMode",
@@ -17,22 +17,51 @@ if ($resultsDir -and -not (Test-Path $resultsDir)) {
     New-Item -ItemType Directory -Path $resultsDir -Force | Out-Null
 }
 
-# 1. Primary Route: Official Unity CLI (Ultra-fast Warm Editor or Managed Headless)
+$fullProjectPath = (Resolve-Path $ProjectPath).Path
+
+# 1. Check if official Unity CLI is available
 $unityCli = Get-Command "unity" -ErrorAction SilentlyContinue
 if ($unityCli) {
     Write-Host "[+] Using official Unity CLI: $($unityCli.Source)" -ForegroundColor Green
-    
-    $argsList = @("test", "`"$ProjectPath`"", "--mode", $TestMode, "--output", "`"$ResultsFile`"")
-    if ($Filter) {
-        $argsList += @("--filter", "`"$Filter`"")
+
+    # Check if Unity Editor is currently running for this project
+    $isEditorRunning = $false
+    try {
+        $statusJson = unity status --format json | ConvertFrom-Json
+        if ($statusJson.success -and $statusJson.data.count -gt 0) {
+            foreach ($instance in $statusJson.data.instances) {
+                if ($instance.state -eq "ready" -and ($instance.project -replace '\\', '/' -eq $fullProjectPath -replace '\\', '/')) {
+                    $isEditorRunning = $true
+                    break
+                }
+            }
+        }
+    } catch {
+        $isEditorRunning = $false
     }
 
-    $process = Start-Process -FilePath "unity" -ArgumentList $argsList -NoNewWindow -Wait -PassThru
-    if ($process.ExitCode -eq 0) {
-        Write-Host "Unity Tests Execution Finished Successfully. Results: $ResultsFile" -ForegroundColor Green
-        exit 0
+    if ($isEditorRunning) {
+        Write-Host "[⚡ HOT EXECUTION] Running tests inside active Unity Editor via Pipeline..." -ForegroundColor Yellow
+        $cmdArgs = @("cmd", "test", "run", "--mode", $TestMode)
+        if ($Filter) {
+            $cmdArgs += @("--filter", "`"$Filter`"")
+        }
+
+        $process = Start-Process -FilePath "unity" -ArgumentList $cmdArgs -NoNewWindow -Wait -PassThru
+        if ($process.ExitCode -eq 0) {
+            Write-Host "Hot Editor Tests Execution Finished Successfully." -ForegroundColor Green
+            exit 0
+        } else {
+            Write-Host "Hot Editor Tests reported failures (ExitCode: $($process.ExitCode))." -ForegroundColor Red
+            exit $process.ExitCode
+        }
     } else {
-        Write-Host "Unity Tests reported failures (ExitCode: $($process.ExitCode)). Results: $ResultsFile" -ForegroundColor Yellow
+        Write-Host "[HEADLESS EXECUTION] Editor not running. Spawning managed test run via Unity CLI..." -ForegroundColor Cyan
+        $cliArgs = @("test", "`"$fullProjectPath`"", "--mode", $TestMode, "--output", "`"$ResultsFile`"")
+        if ($Filter) {
+            $cliArgs += @("--filter", "`"$Filter`"")
+        }
+        $process = Start-Process -FilePath "unity" -ArgumentList $cliArgs -NoNewWindow -Wait -PassThru
         exit $process.ExitCode
     }
 }
