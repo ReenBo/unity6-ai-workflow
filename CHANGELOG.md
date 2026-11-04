@@ -5,6 +5,15 @@ All notable changes to the `Unity6-AI-Workflow` package will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.1] - 2026-11-04
+
+### Added
+- **Mandatory Visual Verification via MCP `game_view`**: Added strict requirement in `rules/unity-cli-standard.md` and `AGENTS.md` for agents to perform visual verification of any objects or UI elements in the scene using MCP `game_view` before task completion.
+- **MCP Runtime Introspection & Event Simulation**: Formalized MCP `eval` (Roslyn), `simulate_pointer`, `recompile`, and `start`/`stop` as standard tooling for live VContainer and UI validation.
+
+### Changed
+- **Renamed Standard**: Elevated standard to **Unity CLI & MCP Tools Standard** across rules and agent orchestration mechanics.
+
 ## [1.3.0] - 2026-10-30
 
 ### Added

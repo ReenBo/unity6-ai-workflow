@@ -14,7 +14,7 @@ When receiving new tasks, the **Primary Agent** routes work through a step-by-st
 | **0.1. AI Evolution** | `Workflow Creator` | Agent/Skill Registry + New Task | Generation of new Skills (`SKILL.md`) and Subagents |
 | **1. Architecture & Design** | `Code Architect` | Specs + `rules/unity6-vcontainer-architecture.md` | C# Contracts (Interfaces/DTOs) + Implementation Spec |
 | **2. Code Implementation** | `Code Writer` | Architect Contract + Target C# File | POCO Class Implementation + **Live Recompilation via `unity recompile`** |
-| **3. Audit & Code Review** | `Code Reviewer` | `git diff` + `rules/unity6-performance-gc.md` | Audit Report (Pass/Fail) + Refinements |
+| **3. Audit & Code Review** | `Code Reviewer` | `git diff` + `rules/unity6-performance-gc.md` + Scene/UI Changes | Audit Report (Pass/Fail) + **Mandatory MCP `game_view` Scene Verification** |
 | **4. Security & PII Protection** | `Security Auditor` | `git diff` + Secrets/Personal Data | **Human-in-the-Loop Approval Protocol** |
 | **5. Auto-Debugger** | `Auto-Fixer` | Error Stack Trace / Failed Test | **Targeted Error Diagnosis via `unity cmd console get` + Surgical Fix (Max 2 retries)** |
 | **6. Automated Testing** | `Test Engineer` | Interview Preference + Native Test Runner | **Warm Editor Execution via `unity test`** (or **SKIPPED** per Developer Interview) |
@@ -32,7 +32,7 @@ When receiving new tasks, the **Primary Agent** routes work through a step-by-st
 5. **`Developer Interview Protocol` (CI/CD & Testing Scope)**: At Step 0, the agent conducts an interactive interview asking whether CI/CD builds or unit/playmode tests are required for the task, avoiding unnecessary heavy test overhead.
 6. **`Loop & Token Budget Guard` (Iteration Limits)**: A hard limit of 5 retry loops per subagent execution to prevent run-away token expenditure.
 7. **`Autonomous Project Setup Guard` (.foragents Auto-Creation)**: If `.foragents/` or `.foragents/PROJECT_MEMORY.md` is missing in the host project root, the workflow automatically initializes it from `.agents/PROJECT_MEMORY_TEMPLATE.md` without requiring manual developer setup.
-8. **`Unity CLI & Hot Pipeline Guard` (Zero-Latency Introspection)**: When Unity Editor is active, all compilation verification, test running, and error diagnostics are routed through the `unity` CLI (`com.unity.pipeline`). Raw `Editor.log` ingestion is strictly prohibited to optimize token budgets (`rules/unity-cli-standard.md`).
+8. **`Unity CLI & MCP Tools Guard` (Zero-Latency Introspection & Scene Verification)**: When Unity Editor is active, all compilation verification, test running, and error diagnostics are routed through the `unity` CLI and Unity MCP Server (`com.unity.pipeline`). Raw `Editor.log` ingestion is strictly prohibited to optimize token budgets. Furthermore, before completing any task modifying scene or UI objects, agents MUST perform visual verification via MCP `game_view` (`rules/unity-cli-standard.md`).
 
 
 ---
@@ -67,7 +67,7 @@ When receiving new tasks, the **Primary Agent** routes work through a step-by-st
 2. **Zero-Allocation Execution**: Inside `ITickable.Tick()` (replacing `Update()`), all `new` allocations, LINQ queries, and boxing are strictly prohibited.
 3. **Async & Reactive**: Asynchronous workflows must use **UniTask** with obligatory `CancellationToken` passing. Event subscriptions must use **R3**.
 4. **Strict Prohibition of Code Comments**: Writing inline or block comments (`//`, `/* ... */`) in source code is strictly prohibited (`rules/code-style-no-comments.md`). The code must be self-documenting through expressive naming, domain types, and clean architectural decomposition.
-5. **Mandatory Unity CLI Integration**: Use `unity recompile`, `unity cmd console status`, and `unity test` for automated validation and zero-overhead test execution (`rules/unity-cli-standard.md`).
+5. **Mandatory Unity CLI & MCP Tools Integration**: Use `unity recompile` (or MCP `recompile`), `unity cmd console status`, and `unity test` for automated validation and zero-overhead test execution. Use MCP `game_view` for mandatory visual verification of any objects in the scene before task completion (`rules/unity-cli-standard.md`).
 
 ---
 
