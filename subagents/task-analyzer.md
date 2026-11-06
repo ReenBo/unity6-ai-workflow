@@ -35,17 +35,40 @@ Before processing any task, Task Analyzer ensures that the host project is initi
 
 ---
 
-## 💬 3. Developer Interview Protocol (CI/CD & Testing Scope)
+## 💬 3. Developer Interview & Task Complexity Tiers (Auto Mode Protocol)
 
-In most everyday tasks, running heavy builds or full native PlayMode tests is unnecessary. During step 3, the Task Analyzer explicitly interviews the developer via interactive questions:
+To eliminate unnecessary token consumption and multi-agent dispatch tax, the Task Analyzer classifies tasks into Complexity Tiers (Tier 0 to Tier 3) and conducts an interactive developer interview:
 
-* **Question**: *"Требуется ли для данной задачи запуск CI/CD проверок и тестов Unity?"*
+* **Question**: *"Какой режим выполнения и уровень сложности выбрать для задачи?"*
 * **Standard Options**:
-  1. `(Recommended) Пропустить тесты/сборку`: Fast-path — только валидация кода, code review и проверка синтаксиса.
-  2. `Быстрый аудит CI`: Запуск консольных скриптов (`ci/run-all-checks.ps1`: VContainer, PII, GC, UI).
-  3. `Полный прогон тестов Unity`: Запуск Native Unity Test Runner (`unity-test-runner` EditMode/PlayMode).
+  1. `(Recommended) Auto mode`: The agent autonomously analyzes task scope, touched files, and keywords to select the optimal Tier.
+  2. `Tier 0: Micro-Fix (Fast-Path)`: Direct execution by Primary Agent. **Subagents strictly prohibited** (up to 90% token savings).
+  3. `Tier 1: Prototype / Spike`: Fast drafting without Architect specs or NUnit test suites (Primary Agent / Code Writer + Code Reviewer).
+  4. `Tier 2: Standard Feature / Fix`: Standard multi-agent pipeline (Task Analyzer -> Architect -> Writer -> Reviewer -> Warm Tests).
+  5. `Tier 3: Mission-Critical Architecture`: Full pipeline with comprehensive audits (PII, GC, Security, Warm Tests, and MCP `game_view` Scene Verification).
 
-The developer's decision is recorded in the task specification and respected by the `Test Engineer` subagent (Step 6).
+---
+
+### 🧠 3.1. Auto Mode Detection Heuristics & Tier Behaviors
+
+When `Auto mode` is selected (default), the Primary Agent applies deterministic classification rules:
+
+#### ⚡ Tier 0 (Micro-Fix) Criteria:
+- **Scope**: Changes confined strictly to styles/markup (`.uss`, `.uxml`) or minor text/constant updates without modifying C# signatures.
+- **Keywords**: *«поправь цвет», «измени отступ», «поменяй текст», «исправь опечатку», «микро-фикс», «поправь 1 строчку»*.
+- **Agent Announcement**:
+  > `⚡ [Auto Mode] Обнаружена микро-правка стилей/конфигурации. Включаю Fast-Path (Tier 0). 🚫 Использование субагентов заблокировано для экономии токенов и времени.`
+- **Execution**: Primary Agent makes direct `edit_file`, triggers `unity recompile`, checks compiler status, and proceeds directly to pre-commit. **Subagents are forbidden.**
+
+#### 🛠️ Tier 1 (Prototype / Spike) Criteria:
+- **Scope**: Exploratory features, mockups, proof-of-concept components, or minor refactoring.
+- **Keywords**: *«набросай черновик», «сделай прототип», «сырая фича», «проверь идею», «пока без тестов», «создание новой фичи», «мелкий рефакторинг»*.
+- **Agent Announcement**:
+  > `🛠️ [Auto Mode] Обнаружен черновик/прототип фичи. Включаю Tier 1 (Prototype). Отключаю Architect и генерацию NUnit тестов.`
+- **Execution**: `Code Architect` is disabled (no formal spec approval needed). `Test Engineer` is disabled (no NUnit tests generated). Code is drafted directly via `Code Writer` / Primary Agent and audited by `Code Reviewer`, verifying successful Unity compilation.
+
+#### 🏗️ Tier 2 (Standard Feature) & Tier 3 (Mission-Critical):
+- Triggered for standard business logic, VContainer services, complex bugs, or core architectural refactorings. Follows full subagent routing.
 
 ---
 

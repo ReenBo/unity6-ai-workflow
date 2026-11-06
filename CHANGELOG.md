@@ -5,6 +5,16 @@ All notable changes to the `Unity6-AI-Workflow` package will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2026-11-06
+
+### Added
+- **Task Complexity Tiers & Adaptive Fast-Path Routing**: Introduced 4-tier routing architecture (`Tier 0: Micro-Fix`, `Tier 1: Prototype / Spike`, `Tier 2: Standard Feature`, `Tier 3: Mission-Critical`).
+- **Strict Subagent Blocking (Tier 0)**: In Tier 0, subagent invocations are strictly prohibited, enabling direct Primary Agent execution (`edit_file` + `unity recompile`) with up to 90% token reduction.
+- **Auto Mode Classifier**: Added `(Recommended) Auto mode` as first option in `Task Analyzer` developer interview with deterministic keyword and file type detection.
+- **Mandatory Pre-Push Cost Summary**: Added requirement to execute `.agents/scripts/get-task-cost.ps1` before `git push`, displaying formatted ASCII widget with uncached tokens, cache hit %, output tokens, duration, and estimated USD cost.
+- **Token & Cost Profiler Subagent & Skill**: Added `token-cost-profiler` subagent and skill with `scripts/analyze-token-bottlenecks.ps1` for diagnosing tool payload bloat, prompt cache efficiency, and context spikes.
+- **Configurable 25,000 Token Budget Alert**: Automatic trigger spawning background profiler when single model turn or task exceeds 25,000 tokens.
+
 ## [1.3.1] - 2026-11-04
 
 ### Added
