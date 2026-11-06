@@ -5,6 +5,13 @@ All notable changes to the `Unity6-AI-Workflow` package will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.1] - 2026-11-06
+
+### Added
+- **SUIF UI Effects & Animation Standard**: Added `rules/suif-effects-and-animations.md` formalizing the GPU-Driven Vertex Injection Pattern (1 Draw Call dynamic batching via `Vertex.tint`), analytical fragment chamfer/wipe equations with subpixel anti-aliasing, and zero-allocation struct-based animation drivers.
+- **Prohibition of DOM-based Masking Tricks**: Strictly prohibited DOM `overflow: hidden` + rotated pseudo-elements in high-performance UI due to Scissor/Stencil batch fragmentation.
+- **Master Orchestrator Integration**: Added UI Effects & Batching Standard to Section 5 of `AGENTS.md`.
+
 ## [1.4.0] - 2026-11-06
 
 ### Added

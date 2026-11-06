@@ -1,6 +1,6 @@
 {
   "name": "unity6-ai-workflow",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "Production-ready AI workflow ecosystem, subagents, skills, and cross-platform CI/CD automation for Unity 6 applications.",
   "main": "AGENTS.md",
   "scripts": {

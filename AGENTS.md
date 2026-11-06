@@ -95,6 +95,7 @@ When `Auto mode` is active (default), the Primary Agent autonomously classifies 
 3. **Async & Reactive**: Asynchronous workflows must use **UniTask** with obligatory `CancellationToken` passing. Event subscriptions must use **R3**.
 4. **Strict Prohibition of Code Comments**: Writing inline or block comments (`//`, `/* ... */`) in source code is strictly prohibited (`rules/code-style-no-comments.md`). The code must be self-documenting through expressive naming, domain types, and clean architectural decomposition.
 5. **Mandatory Unity CLI & MCP Tools Integration**: Use `unity recompile` (or MCP `recompile`), `unity cmd console status`, and `unity test` for automated validation and zero-overhead test execution. Use MCP `game_view` for mandatory visual verification of any objects in the scene before task completion (`rules/unity-cli-standard.md`).
+6. **UI Effects & Batching Standard**: UI visual effects, chamfers, and hover transitions must adhere to the GPU-Driven Vertex Injection Pattern (`rules/suif-effects-and-animations.md`), strictly prohibiting runtime material duplication (`new Material()`) and DOM-based clipping (`overflow: hidden` with rotated elements).
 
 ---
 
