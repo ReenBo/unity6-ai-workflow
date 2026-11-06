@@ -48,21 +48,19 @@ Before completing any task, opening a PR, or requesting developer review for cha
    * **Visual Hierarchy & Contrast**: Themes, borders, colors, and active states render as specified in design contracts.
    * **Regression Check**: Background viewports and inactive elements correctly transition to standby or hidden states.
 
-### 2.4. Automated Testing (Test Engineer)
-Run unit/playmode tests through the hot runner:
+### 2.4. Targeted Automated Testing (Test Engineer)
+Running entire test suites indiscriminately is prohibited. Always scope test runs strictly to modified files or fixtures using filters:
 ```bash
-unity test --mode EditMode
-```
-If specific classes were modified, leverage test filtering:
-```bash
+# Target specific fixture, class, or method
 unity test --mode EditMode --filter "<NamespaceOrClassName>"
 ```
 
-### 2.5. Token Budget Optimization
+### 2.5. Token Budget Optimization & Terminal Bounding
 Always prefer structured JSON or MCP tool responses over raw text streams:
 * `unity cmd console status`: ~40 tokens (99.8% token savings vs reading `Editor.log`).
 * `unity cmd console get --level error`: targeted error traces only.
 * MCP `recompile`: ~25 tokens structured status.
+* **Terminal Truncation**: When running CLI commands with potentially verbose outputs, pipe through `Select-Object -Last 50` or filter with `Select-String` (grep). Raw dumps of build logs or console streams into LLM context are prohibited.
 
 ---
 

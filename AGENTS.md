@@ -47,11 +47,11 @@ When `Auto mode` is active (default), the Primary Agent autonomously classifies 
 ## 🛡️ 2. Ten Security & Autonomy Mechanics
 
 1. **`Git State Guard` (Rollback Snapshots)**: Before any major change, a localized `git stash` or `ai-checkpoint` is created for 1-click rollback.
-2. **`Self-Correction Protocol` (Auto-Debugger)**: On compilation or test failures, the agent performs up to 2 surgical fixes based on stack traces before escalating to human.
+2. **`Self-Correction Protocol` (Auto-Debugger & Escalation)**: On compilation or test failures, the agent performs up to 2 surgical fixes based on stack traces. If 2 attempts fail, execution stops immediately and emits a structured Escalation Report (Error, 2 Attempted Fixes, Clarifying Question).
 3. **`Human-in-the-Loop Protocol` (PII Approval)**: All operations involving personal data, secrets, or hardcoded paths require explicit developer confirmation.
 4. **`Feedback Loop & /learn` (Continuous Learning)**: Developer feedback is immediately persisted into project memory and never repeated.
 5. **`Developer Interview Protocol` (Complexity Tiers & Auto Mode)**: At Step 0, the agent conducts an interactive interview prioritizing `(Recommended) Auto mode`, allowing fast-path bypass of heavy subagents.
-6. **`Loop & Token Budget Guard` (Iteration Limits)**: A hard limit of 5 retry loops per subagent execution to prevent run-away token expenditure.
+6. **`Loop & Token Budget Guard` (Iteration Limits & Circuit Breaker)**: A hard limit of 5 retry loops per subagent execution and a **15-Step Tool Call Circuit Breaker** per subtask to prevent runaway tool loops without milestones.
 7. **`Autonomous Project Setup Guard` (.foragents Auto-Creation)**: If `.foragents/` or `.foragents/PROJECT_MEMORY.md` is missing in the host project root, the workflow automatically initializes it from `.agents/PROJECT_MEMORY_TEMPLATE.md` without requiring manual developer setup.
 8. **`Unity CLI & MCP Tools Guard` (Zero-Latency Introspection & Scene Verification)**: When Unity Editor is active, all compilation verification, test running, and error diagnostics are routed through the `unity` CLI and Unity MCP Server (`com.unity.pipeline`). Raw `Editor.log` ingestion is strictly prohibited to optimize token budgets. Furthermore, before completing any task modifying scene or UI objects, agents MUST perform visual verification via MCP `game_view` (`rules/unity-cli-standard.md`).
 9. **`Token Budget Guard & Background Profiler` (25,000 Token Alert)**: If any single model request or the active task exceeds **25,000 tokens** (configurable limit), a Budget Alert is triggered. The agent spawns the background `Token & Cost Profiler` (`token-cost-profiler`) to inspect payload bloat and cache efficiency until `pre-commit`.
@@ -75,8 +75,12 @@ When `Auto mode` is active (default), the Primary Agent autonomously classifies 
 6. **Fast-Path Subagent Blocking**:
    - When Tier 0 is active, subagent invocations (`invoke_subagent`) are strictly prohibited to prevent context duplication.
 7. **Payload Bounding & Tool Discipline**:
-   - File reads must specify `StartLine`/`EndLine` for files exceeding 100 lines.
-   - Terminal command outputs must be filtered with grep / Select-String to prevent dumping mega-payloads into context.
+   - **File Read Bounding**: File reads must specify `StartLine`/`EndLine` for files exceeding 100 lines. Locate files via targeted search before reading.
+   - **Prohibited Files (Unity Scope)**: Never read or scan `Library/`, `Temp/`, `obj/`, `Build/`, raw logs (`Editor.log`, `Player.log`), or whole serialized YAML files (`*.unity`, `*.prefab`, `*.asset`).
+   - **Terminal Truncation**: Terminal command outputs must be filtered with grep / Select-String / `Select-Object -Last 50` to prevent dumping mega-payloads into context.
+   - **Targeted Tests**: Run targeted tests (`--filter`) rather than whole test suites.
+   - **No Redundant Code Printing**: Do not reprint full modified code in chat responses; use clickable links to file and line ranges.
+   - **Surgical Diff Only**: Refactoring or touching adjacent untouched code outside the immediate task scope is prohibited.
 
 ---
 

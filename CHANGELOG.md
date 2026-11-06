@@ -5,6 +5,17 @@ All notable changes to the `Unity6-AI-Workflow` package will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.2] - 2026-11-06
+
+### Added
+- **Token Hygiene & Anti-Loop Circuit Breaker**: Introduced comprehensive rules in `rules/context-and-token-budget.md` and `AGENTS.md`:
+  - **Tool Call Circuit Breaker**: Hard pause and developer confirmation if a subtask executes 15 consecutive tool calls without reaching a verified milestone.
+  - **Prohibition of Redundant Code Re-Printing**: Forbidden from reprinting full files or large code blocks in chat responses after tool write/edit operations; use clickable links (`[File.cs#L1-L10](file:///...)`) and minimal diffs.
+  - **Unity-Specific Blacklisted Paths**: Prohibited blind reading of `Library/`, `Temp/`, `obj/`, `Build/`, raw logs (`Editor.log`, `Player.log`), and massive serialized YAML files (`*.unity`, `*.prefab`, `*.asset`).
+  - **Surgical Dits Only**: Strict prohibition against opportunistic refactoring or reformatting of adjacent untouched code outside task scope.
+  - **Auto-Fixer Structured Escalation Protocol**: Standardized 3-part escalation report schema (Error Trace, 2 Attempted Fixes with failure causes, Clarifying Question) when 2 fix attempts are exhausted.
+  - **Targeted Test Execution & Output Bounding**: Required test runner filtering (`--filter`) and terminal output truncation via `Select-Object -Last 50` / `Select-String`.
+
 ## [1.4.1] - 2026-11-06
 
 ### Added

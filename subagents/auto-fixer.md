@@ -22,11 +22,30 @@ graph TD
 
 ## ⚡ 2. Budget & Retry Limits
 
-- **Maximum 2 Attempts**: A hard limit of 2 automated fix attempts per issue to prevent run-away token expenditure.
+- **Maximum 2 Attempts**: A hard limit of 2 automated fix attempts per issue to prevent run-away token expenditure. Attempting a 3rd blind fix or guessing in a loop is strictly forbidden.
 - **No Superficial Symptom Patches**: Prohibited from "fixing" errors by commenting out failing test assertions, wrapping calls in silent `catch {}` blocks, or returning dummy fallback objects.
 - **Token Efficiency via Structured JSON**: Query only targeted error entries through `unity cmd console get --level error` rather than ingesting entire raw `Editor.log` streams. Clear console via `unity cmd console clear` upon resolution.
 
 ---
 
+## 🛑 3. Escalation Protocol (Rule of 2 Attempts)
+
+If the compilation error or test failure persists after **2 consecutive attempts**, the agent MUST immediately stop and output an Escalation Report formatted as follows:
+
+```markdown
+### ⚠️ Auto-Fixer Escalation Report
+1. **Error Trace**: 
+   - Code: `CS0246`
+   - File & Line: `Assets/.../MiningService.cs:42`
+   - Message: `The type or namespace name 'IVault' could not be found`
+2. **Attempted Fixes**:
+   - Attempt 1: Added `using Core.Storage;` -> Failed: namespace does not contain `IVault`.
+   - Attempt 2: Checked assembly definition references -> Failed: assembly definition circular dependency detected.
+3. **Clarifying Question**:
+   - Should `IVault` be moved into `Core.Contracts`, or should `MiningService` depend on an alternative abstraction?
+```
+
+---
+
 ## 📤 Output Result
-- Fix confirmation report or escalation report detailing root cause analysis.
+- Fix confirmation report or Escalation Report detailing root cause analysis.
