@@ -210,3 +210,4 @@ Write-Output ($rowFormat -f "Task Duration", $durationStr)
 Write-Output ($rowFormat -f "Estimated Cost", ("~{0} (Gemini Flash)" -f $costFormatted))
 Write-Output ($rowFormat -f "Budget Status", $budgetStatus)
 Write-Output $separator
+

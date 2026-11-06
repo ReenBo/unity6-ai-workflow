@@ -134,3 +134,4 @@ if ($adviceCount -eq 0) {
     Write-Output "✅ Context consumption is balanced. No severe bottlenecks detected."
 }
 Write-Output "================================================================="
+

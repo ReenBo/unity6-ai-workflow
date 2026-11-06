@@ -15,7 +15,7 @@ description: Analyzes execution transcripts for token consumption spikes, tool p
    - Fires automatically when any single model request or the current task exceeds **25,000 tokens** (configurable in `AGENTS.md`).
    - Runs independently in background mode until pre-commit, analyzing logs and preparing a bottleneck diagnosis.
 2. **Manual Invocation**:
-   - Developer command: `/profile-tokens`, `/cost-audit`, or explicit prompt *«Проанализируй расход токенов»*.
+   - Developer command: `/profile-tokens`, `/cost-audit`, or explicit prompt *“Analyze token consumption”*.
 
 ---
 
@@ -44,3 +44,4 @@ description: Analyzes execution transcripts for token consumption spikes, tool p
    - If repetitive retries detected: *Advise manual inspection or targeted compiler error querying.*
 4. **Report Generation**:
    - Output concise diagnostic Markdown card into chat and attach to Tier 2 execution logs if critical.
+

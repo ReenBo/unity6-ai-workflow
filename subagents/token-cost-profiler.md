@@ -10,7 +10,7 @@
    - Automatically triggered when any single model request or the active task consumes over **25,000 tokens** (configurable limit).
    - Operates in the background while the Primary Agent completes implementation, analyzing `transcript.jsonl` and preparing a diagnostic report prior to `pre-commit`.
 2. **On-Demand Manual Mode**:
-   - Triggered by developer prompt or slash commands (`/profile-tokens`, `/cost-audit`, *«Проанализируй расход токенов»*).
+   - Triggered by developer prompt or slash commands (`/profile-tokens`, `/cost-audit`, *“Analyze token consumption”*).
    - Generates immediate full-session or single-task breakdown.
 
 ---
@@ -56,3 +56,4 @@ graph TD
   - Enforce **Tier 0 (Fast-Path)** for minor USS/UXML edits to bypass subagent overhead.
   - Apply line bounding to large file inspections.
 ```
+

@@ -38,9 +38,9 @@ To prevent runaway token expenditure, the Primary Agent routes work through dete
 #### ⚡ Auto Mode Classification & Announcement Strings
 When `Auto mode` is active (default), the Primary Agent autonomously classifies the request and announces:
 - **For Tier 0 (Micro-Fix)**:
-  > `⚡ [Auto Mode] Обнаружена микро-правка стилей/конфигурации. Включаю Fast-Path (Tier 0). 🚫 Использование субагентов заблокировано для экономии токенов и времени.`
+  > `⚡ [Auto Mode] Micro-fix or styling update detected. Activating Fast-Path (Tier 0). 🚫 Subagent dispatch is prohibited to optimize token budget and latency.`
 - **For Tier 1 (Prototype / Spike)**:
-  > `🛠️ [Auto Mode] Обнаружен черновик/прототип фичи. Включаю Tier 1 (Prototype). Отключаю Architect и генерацию NUnit тестов.`
+  > `🛠️ [Auto Mode] Feature prototype / draft detected. Activating Tier 1 (Prototype). Disabling Architect specs and NUnit test generation.`
 
 ---
 

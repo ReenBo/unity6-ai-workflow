@@ -39,7 +39,7 @@ Before processing any task, Task Analyzer ensures that the host project is initi
 
 To eliminate unnecessary token consumption and multi-agent dispatch tax, the Task Analyzer classifies tasks into Complexity Tiers (Tier 0 to Tier 3) and conducts an interactive developer interview:
 
-* **Question**: *"Какой режим выполнения и уровень сложности выбрать для задачи?"*
+* **Question**: *"Which execution mode and complexity tier should be used for this task?"*
 * **Standard Options**:
   1. `(Recommended) Auto mode`: The agent autonomously analyzes task scope, touched files, and keywords to select the optimal Tier.
   2. `Tier 0: Micro-Fix (Fast-Path)`: Direct execution by Primary Agent. **Subagents strictly prohibited** (up to 90% token savings).
@@ -55,16 +55,16 @@ When `Auto mode` is selected (default), the Primary Agent applies deterministic 
 
 #### ⚡ Tier 0 (Micro-Fix) Criteria:
 - **Scope**: Changes confined strictly to styles/markup (`.uss`, `.uxml`) or minor text/constant updates without modifying C# signatures.
-- **Keywords**: *«поправь цвет», «измени отступ», «поменяй текст», «исправь опечатку», «микро-фикс», «поправь 1 строчку»*.
+- **Keywords / Triggers**: Style adjustments, color tweaks, padding/margin changes, typo fixes, micro-fixes, 1-3 line modifications.
 - **Agent Announcement**:
-  > `⚡ [Auto Mode] Обнаружена микро-правка стилей/конфигурации. Включаю Fast-Path (Tier 0). 🚫 Использование субагентов заблокировано для экономии токенов и времени.`
+  > `⚡ [Auto Mode] Micro-fix or styling update detected. Activating Fast-Path (Tier 0). 🚫 Subagent dispatch is prohibited to optimize token budget and latency.`
 - **Execution**: Primary Agent makes direct `edit_file`, triggers `unity recompile`, checks compiler status, and proceeds directly to pre-commit. **Subagents are forbidden.**
 
 #### 🛠️ Tier 1 (Prototype / Spike) Criteria:
 - **Scope**: Exploratory features, mockups, proof-of-concept components, or minor refactoring.
-- **Keywords**: *«набросай черновик», «сделай прототип», «сырая фича», «проверь идею», «пока без тестов», «создание новой фичи», «мелкий рефакторинг»*.
+- **Keywords / Triggers**: Feature drafts, prototypes, spikes, raw features, exploratory logic, "no tests needed", rapid spike.
 - **Agent Announcement**:
-  > `🛠️ [Auto Mode] Обнаружен черновик/прототип фичи. Включаю Tier 1 (Prototype). Отключаю Architect и генерацию NUnit тестов.`
+  > `🛠️ [Auto Mode] Feature prototype / draft detected. Activating Tier 1 (Prototype). Disabling Architect specs and NUnit test generation.`
 - **Execution**: `Code Architect` is disabled (no formal spec approval needed). `Test Engineer` is disabled (no NUnit tests generated). Code is drafted directly via `Code Writer` / Primary Agent and audited by `Code Reviewer`, verifying successful Unity compilation.
 
 #### 🏗️ Tier 2 (Standard Feature) & Tier 3 (Mission-Critical):
