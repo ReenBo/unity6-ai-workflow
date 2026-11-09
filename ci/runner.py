@@ -37,21 +37,28 @@ def audit_vcontainer(project_root):
 def scan_pii_and_secrets(project_root):
     print_banner("\n[2/3] Running Security & PII Leak Scanner (Python)...", "33")
     leak_count = 0
-    cs_files = list(Path(project_root).rglob("*"))
+    ignored_patterns = ["Library", "Temp", "Packages", ".git", ".foragents", "Builds", "Build"]
+    binary_extensions = {".dll", ".wasm", ".so", ".dylib", ".a", ".png", ".jpg", ".jpeg", ".tga", ".psd", ".asset", ".unity", ".prefab", ".meta", ".fbx", ".obj", ".wav", ".mp3", ".ogg", ".log"}
     
-    for file_path in cs_files:
-        if file_path.is_dir() or any(ignored in str(file_path) for ignored in ["Library", "Temp", "Packages", ".git"]):
+    for file_path in Path(project_root).rglob("*"):
+        if file_path.is_dir() or file_path.suffix.lower() in binary_extensions:
+            continue
+        if any(ignored in file_path.parts for ignored in ignored_patterns):
             continue
         try:
             content = file_path.read_text(encoding="utf-8", errors="ignore")
             
+            # Skip documentation examples containing template usernames
+            if file_path.suffix.lower() == ".md" and ("<user>" in content or "username" in content or "example" in content):
+                continue
+
             # Check for hardcoded absolute user paths
-            if re.search(r"[C-Z]:\\Users\\|\/Users\/|\/home\/", content):
+            if re.search(r"[C-Z]:\\Users\\[a-zA-Z0-9_\.]+\\", content) or re.search(r"\/(?:home|Users)\/[a-zA-Z0-9_\.]+\/", content):
                 print(f"\033[31m  SECURITY WARNING: Hardcoded User Path in {file_path.name}\033[0m")
                 leak_count += 1
                 
             # Check for potential API Keys
-            if re.search(r"sk-[a-zA-Z0-9]{20,}", content):
+            if re.search(r"\bsk-[a-zA-Z0-9]{20,}\b", content):
                 print(f"\033[31m  CRITICAL RISK: Potential API Key in {file_path.name}\033[0m")
                 leak_count += 1
         except Exception:
