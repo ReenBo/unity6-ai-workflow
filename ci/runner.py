@@ -7,7 +7,15 @@ Works identically on Windows, macOS, and Linux without external dependencies.
 import os
 import sys
 import re
+import io
 from pathlib import Path
+
+if sys.platform == "win32":
+    try:
+        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
+        sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace")
+    except Exception:
+        pass
 
 def print_banner(text, color_code="36"):
     print(f"\033[{color_code}m{text}\033[0m")

@@ -1,7 +1,12 @@
-# PowerShell Script: Universal CI/CD Check Runner for Unity 6
+﻿# PowerShell Script: Universal CI/CD Check Runner for Unity 6
 param (
     [string]$ProjectPath = "."
 )
+
+$env:PYTHONIOENCODING = "utf-8"
+try {
+    [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+} catch {}
 
 $hasPython = $false
 $pyCmd = Get-Command python -ErrorAction SilentlyContinue
@@ -32,6 +37,7 @@ if (-not (Test-Path $runnerScript)) {
 
 if ($hasPython -and (Test-Path $runnerScript)) {
     & $pyCmd.Source $runnerScript "$ProjectPath"
+    exit $LASTEXITCODE
 } else {
     Write-Host "=========================================" -ForegroundColor Cyan
     Write-Host "🚀 Starting Unity 6 AI Workflow CI Checks (PowerShell Mode)" -ForegroundColor Cyan
@@ -80,7 +86,9 @@ if ($hasPython -and (Test-Path $runnerScript)) {
     Write-Host "=========================================" -ForegroundColor Cyan
     if ($allPassed) {
         Write-Host "✅ All AI Workflow Audits Passed!" -ForegroundColor Green
+        exit 0
     } else {
         Write-Host "❌ Some audits reported warnings or failures." -ForegroundColor Yellow
+        exit 1
     }
 }
