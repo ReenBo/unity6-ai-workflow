@@ -37,7 +37,7 @@ def audit_vcontainer(project_root):
 def scan_pii_and_secrets(project_root):
     print_banner("\n[2/3] Running Security & PII Leak Scanner (Python)...", "33")
     leak_count = 0
-    ignored_patterns = ["Library", "Temp", "Packages", ".git", ".foragents", "Builds", "Build"]
+    ignored_patterns = ["Library", "Temp", "Packages", ".git", ".foragents", ".agents", "Builds", "Build"]
     binary_extensions = {".dll", ".wasm", ".so", ".dylib", ".a", ".png", ".jpg", ".jpeg", ".tga", ".psd", ".asset", ".unity", ".prefab", ".meta", ".fbx", ".obj", ".wav", ".mp3", ".ogg", ".log"}
     
     for file_path in Path(project_root).rglob("*"):

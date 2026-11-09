@@ -7,7 +7,7 @@ Write-Host "=== Security & PII Leak Scanner ===" -ForegroundColor Cyan
 
 $ignoredExtensions = @(".dll", ".wasm", ".so", ".dylib", ".a", ".png", ".jpg", ".jpeg", ".tga", ".psd", ".asset", ".unity", ".prefab", ".meta", ".fbx", ".obj", ".wav", ".mp3", ".ogg", ".log")
 $files = Get-ChildItem -Path $Path -Recurse | Where-Object { 
-    $_.FullName -notmatch "Library|Temp|Packages|\.git|\.foragents|Builds" -and 
+    $_.FullName -notmatch "Library|Temp|Packages|\.git|\.foragents|\.agents|Builds" -and 
     -not $_.PSIsContainer -and 
     $ignoredExtensions -notcontains $_.Extension.ToLower() 
 }
