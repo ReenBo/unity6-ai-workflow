@@ -9,6 +9,9 @@
 2. [ ] **GC & Performance**: Are `new`, LINQ, and boxing absent inside `Tick()` / `FixedTick()`?
 3. [ ] **Memory Leaks**: Are `NativeArray` objects explicitly freed via `.Dispose()`? Are R3 subscriptions cleared?
 4. [ ] **UniTask**: Is `CancellationToken` explicitly passed into async invocations?
+5. [ ] **No Code Comments**: Are `//` and `/* */` comments completely absent from C# source files (`rules/code-style-no-comments.md`)?
+6. [ ] **UI Effects & Batching**: Are DOM `overflow: hidden` + rotated child wipes and runtime `new Material()` avoided in favor of zero-stencil `MeshGenerationContext.Allocate` or shared materials (`rules/suif-effects-and-animations.md`)?
+7. [ ] **Visual & Draw Call Verification**: Were UI/scene changes visually checked via MCP `game_view` and audited for draw call regressions (`rules/unity-cli-standard.md`)?
 
 ---
 

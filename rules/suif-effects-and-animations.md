@@ -8,18 +8,24 @@
 
 | Axis | Standard Rule | Prohibited Anti-Pattern |
 | :--- | :--- | :--- |
-| **Batching** | **1 Draw Call for all buttons/panels** sharing single static Material Asset | Creating runtime instances via `new Material(shader)` per element |
-| **Clipping** | **GPU-Math Fragment Clipping** (SDF / linear equations + `smoothstep`) | DOM `overflow: hidden` with rotated/skewed child pseudo-elements |
-| **Animation Driving** | **Vertex Attribute Stream** (`Vertex.tint` / `uv1`) or GPU `_Time` | CPU `generateVisualContent` (`Painter2D.MarkDirtyRepaint()`) in frame loops |
-| **Memory & GC** | **0 B (Zero-Alloc)** struct-based value lerpers | Heap closures (`Action`, `Func`), Coroutines, or `MonoBehaviour` drivers |
-| **Anti-Aliasing** | **Subpixel AA** via screen-space derivatives (`fwidth()`) | Jagged pixel boundaries or expensive multi-pass MSAA buffers |
+| **Batching** | **Default UITK shader (`MeshGenerationContext.Allocate`)** or **1 shared static Material Asset** across like elements | Creating runtime instances via `new Material(shader)` per element, or splitting default UITK batches unnecessarily |
+| **Clipping** | **Stack-only polygon clipping** (Sutherland-Hodgman) or **GPU-Math Fragment Clipping** (`smoothstep`) | DOM `overflow: hidden` with rotated/skewed child pseudo-elements (`Stencil` batch break) |
+| **Animation Driving** | **Transition-scoped `IVisualElementScheduledItem`** (`0` cost at rest) or **Vertex Attribute Stream / GPU `_Time`** | Continuous unconditional `MarkDirtyRepaint()` every frame in `ITickable.Tick()` when idle |
+| **Memory & GC** | **0 B (Zero-Alloc)** stack buffers (`Span<Vector2>`) & struct-based value lerpers | Heap closures (`Action`, `Func`), Coroutines, or `MonoBehaviour` drivers |
+| **Anti-Aliasing** | **Subpixel AA** via screen-space derivatives (`fwidth()`) or native triangle geometry | Jagged pixel boundaries or expensive multi-pass MSAA buffers |
 
 ---
 
-## ⚡ 2. The Single Material Vertex Injection Pattern
+## ⚡ 2. Batching Architecture: Default-Shader vs Single Shared Material
 
-### 2.1. The 1-Draw-Call Batching Principle
-In Unity 6 UI Toolkit, dynamic batching merges all visual elements sharing the same **Texture Atlas** and **Material Asset** into a single draw call. 
+### 2.0. Default-Shader Geometry Injection (Preferred for Vector Wipes & Chamfers)
+Assigning a custom `Material` (`unityMaterial`) creates a material boundary against surrounding default `Internal-UIRDefault` `VisualElement`s and `Label`s. For solid/angled vector fills, wipes, and chamfers:
+* Render directly on the **default UI Toolkit shader** (`material == null`, `TextureId.invalid`) via `generateVisualContent` and `MeshGenerationContext.Allocate(...)`.
+* Clip geometry on the stack (`Span<Vector2>` Sutherland-Hodgman or direct triangle construction) so **`overflow: hidden` and stencil buffers are never triggered**.
+* Allocate **`0` vertices** in idle and active-locked states; schedule `MarkDirtyRepaint()` strictly during active transition windows (`0.12s–0.16s`) and pause immediately upon completion.
+
+### 2.1. The Single Shared Material Pattern (For Custom Fragment Effects)
+In Unity 6 UI Toolkit, when custom fragment shading is required across a homogeneous group of elements, dynamic batching merges elements sharing the same **Texture Atlas** and **Material Asset**: 
 
 * **The Problem:** Modifying material uniforms (`material.SetFloat("_HoverProgress", val)`) requires creating unique material instances, forcing $N$ Draw Calls for $N$ elements.
 * **The SUIF Solution:** All interactive elements bind to **one shared static Material asset** (`SUIF-CyberUI-Core.mat`). Individual dynamic state is packed directly into per-element **Vertex Data** (`Vertex.tint` or secondary UVs):
@@ -54,10 +60,12 @@ When rendering custom quads or procedural elements via `MeshGenerationContext`:
 * **Prohibited:** Creating angled hover wipes by placing an inner element with `rotate(15deg)` or `transform: skew` inside a container with `overflow: hidden`.
 * **Reason:** In UITK, rotated children inside clipped containers cannot be clipped by hardware Scissor Rects. UITK forces Stencil buffer allocation and breaks batching, transforming a 10-button menu into 25–40 separate draw calls.
 
-### 3.2. Prohibition of Per-Frame `Painter2D` Animation
-* **Prohibited:** Overriding `generateVisualContent` and calling `MarkDirtyRepaint()` on every frame in `ITickable.Tick()` to animate shapes via CPU.
-* **Reason:** Re-triangulating contours and uploading vertex buffers (`UploadMesh`) at 60–120 FPS causes main-thread CPU spikes and battery drain.
-* **Allowed Use for `generateVisualContent`:** Static or resize-only vector framing (e.g., drawing non-standard window border geometry once upon window creation or resolution change).
+### 3.2. Prohibition of Unconditional Per-Frame `Painter2D` Animation
+* **Prohibited:** Calling `MarkDirtyRepaint()` on every frame inside `ITickable.Tick()` even when visuals are idle/static.
+* **Reason:** Re-triangulating contours and uploading vertex buffers (`UploadMesh`) at 60–120 FPS wastes main-thread CPU and prevents batch reuse.
+* **Allowed Use for `generateVisualContent`:**
+  1. Static or resize-only vector geometry (`0` per-frame work).
+  2. Transition-scoped `MeshGenerationContext.Allocate` effects driven by `IVisualElementScheduledItem` strictly during hover/press transitions (`0` vertices when idle, immediately paused when settled).
 
 ---
 
@@ -66,23 +74,18 @@ When rendering custom quads or procedural elements via `MeshGenerationContext`:
 All diagonal wipes, chamfers, and edge contours are calculated analytically in the fragment shader with subpixel anti-aliasing:
 
 ```hlsl
-// SUIF Cyberpunk Angled Frontline & Chamfer Formula
 float4 EvaluateCyberWipe(float2 uv, float progress, float chamferSize, float4 baseColor, float4 activeColor)
 {
-    // 1. Angled Frontline (Cyberpunk 35-degree sweep)
     const float slope = 0.35;
     float frontLine = uv.x + (1.0 - uv.y) * slope;
     float scaledProgress = progress * (1.0 + slope);
 
-    // Subpixel screen-space anti-aliasing
     float aa = fwidth(frontLine) * 1.5;
     float wipeMask = smoothstep(frontLine - aa, frontLine + aa, scaledProgress);
 
-    // 2. Chamfered Corner (e.g. Top-Right Corner Cut)
     float cornerSum = uv.x + uv.y;
     float cornerCut = step(cornerSum, 2.0 - chamferSize);
 
-    // 3. Single-Pass Color Composite
     float4 finalColor = lerp(baseColor, activeColor, wipeMask);
     finalColor.a *= cornerCut;
     return finalColor;
@@ -99,7 +102,6 @@ float4 EvaluateCyberWipe(float2 uv, float progress, float chamferSize, float4 ba
 2. **UniTask & R3 Integration**:
    - Drive value transitions via value-task loops using `CancellationToken`:
      ```csharp
-     // Recommended pattern:
      public async UniTask AnimateHoverAsync(float targetProgress, CancellationToken ct)
      {
          float start = CurrentProgress;
@@ -136,3 +138,12 @@ When a high-contrast angled wipe sweeps across a button:
        color: #050507;
    }
    ```
+
+---
+
+## 🎯 7. UI-Only Scene URP & Multi-Platform Quality Checklist
+
+When optimizing UI-only scenes (Screen Space - Overlay `UIDocument` with zero 3D world geometry):
+1. **Camera Overhead Removal**: Set `Main Camera` `CullingMask = 0` and disable `HDR`, `MSAA`, `Shadows`, `DepthTexture`, `OpaqueTexture`, `PostProcessing`, `AllowXRRendering`, and `AllowHDROutput`; match background color to the UI root color.
+2. **All Active `QualitySettings` Platforms**: Inspect `ProjectSettings/QualitySettings.asset` across **every** build target (`Standalone`, `WebGL`, mobile) and disable unused Renderer Features (e.g., `ScreenSpaceAmbientOcclusion`) on all active URP Renderer assets, not just the Editor's active tier.
+3. **Separate UI vs URP Attribution**: Measure UI Toolkit batching (`UIRenderDevice.GatherDrawStatistics()`) independently from camera/URP pass overhead before refactoring UI shaders or DOM hierarchies.

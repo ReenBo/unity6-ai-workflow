@@ -32,15 +32,16 @@ unity cmd console status
 * Clear console after resolving errors: `unity cmd console clear`.
 
 ### 2.2. Runtime State Introspection & Event Simulation
-* **Safe Roslyn `eval`**: Use MCP `eval` to verify VContainer dependency resolution, reactive R3 streams, and visual element hierarchies in the active AppDomain.
+* **Safe Roslyn `eval`**: Use MCP `eval` to verify VContainer dependency resolution, reactive R3 streams, and visual element hierarchies in the active AppDomain. MCP `eval` compiles inside a method body, so use fully-qualified type names (`UnityEngine.Object`, `System.Reflection.BindingFlags`) instead of top-level `using` directives.
   > [!CAUTION]
   > Never execute synchronous blocking calls (e.g., `Thread.Sleep()`, `.GetAwaiter().GetResult()`) inside `eval`. Blocking the Unity main thread hangs the PlayerLoop and crashes the Pipeline server. Always use `async void` or non-blocking queries.
+* **UI Toolkit Batching & Draw Call Audit**: In PlayMode, inspect `UIRenderDevice.GatherDrawStatistics()` (`drawCommandCount`, `drawRangeCount`, `drawRangeCallCount`), `RenderTree.m_FirstCommand` (`texture`, `stencilRef`, `material`, `flags`), and `TextureRegistry` via MCP `eval` to pinpoint batch breaks without adding debug MonoBehaviours.
 * **Input Simulation**: Use MCP `simulate_pointer` and UI Toolkit event dispatching (`NavigationSubmitEvent`, `ClickEvent`) for autonomous UI testing and button validation without requiring manual clicks from the developer.
 
 ### 2.3. Mandatory Visual Verification of Scene Objects (MCP `game_view`)
 Before completing any task, opening a PR, or requesting developer review for changes involving scene objects or UI:
 1. **Capture Composite Screen View**:
-   Call MCP `game_view` with `source: "screen"` and reference resolution (e.g., 1920x1080) to capture the composite frame including Screen Space - Overlay UI Toolkit canvases and cameras.
+   Call MCP `game_view` with `source: "screen"` and reference resolution (e.g., 1920x1080) to capture the composite frame including Screen Space - Overlay UI Toolkit canvases and cameras. **Never write temporary screenshots inside `Assets/`** (it triggers `AssetDatabase` imports and `.meta` churn); store temporary captures in the conversation `scratch/` directory if needed.
 2. **Visual Inspection**:
    Inspect the captured image to verify:
    * **Layout Fidelity**: No overlapping boxes, clipping, or incorrect anchor alignments.

@@ -5,6 +5,15 @@ All notable changes to the `Unity6-AI-Workflow` package will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.3] - 2026-11-13
+
+### Changed
+- **Default-Shader UI Geometry & Draw Call Audit Rules**: Updated `rules/suif-effects-and-animations.md`, `rules/unity-cli-standard.md`, and `subagents/code-reviewer.md`:
+  - Documented default-shader `MeshGenerationContext.Allocate` + stack-only polygon clipping (`Span<Vector2>`) as preferred zero-stencil pattern when custom `Material` breaks batching against default `Internal-UIRDefault` UITK elements.
+  - Added UI-only scene URP/Camera checklist across all active `QualitySettings` platforms (`PC` + `WebGL`).
+  - Removed `//` comments from code snippets in `rules/suif-effects-and-animations.md` to enforce `rules/code-style-no-comments.md`.
+  - Documented MCP `eval` UI Toolkit `GatherDrawStatistics()` batching inspection, method-body compilation scope, `scratch/` screenshot path discipline, and expanded `code-reviewer.md` checklist.
+
 ## [1.4.2] - 2026-11-06
 
 ### Added
