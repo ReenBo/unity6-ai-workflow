@@ -15,3 +15,11 @@
 
 ## 3. UI LifetimeScope & VContainer
 * UI controllers must not manage business logic directly. UI controllers subscribe to models/services via VContainer DI and present R3 reactive data properties.
+
+---
+
+## 4. SUIF DTO Standard & Zero-Realloc UI Enforcement
+* **DTO Contracts (`IViewDto`)**: Every parameterized view must receive immutable value-type DTOs (`struct : IViewDto`) composed of domain primitives and enums—never localized text, formatted strings, RichText tags, CSS tokens, or `UnityEngine.UIElements` references.
+* **ViewModels (`BaseViewModel`)**: Must emit `ReactiveProperty<TDto>` or DTO arrays cleanly without string interpolation (`$"..."`), `ZString.Format`, or UI formatting logic.
+* **Formatters (`FixedTextWriter<TState>`)**: All UI text assembly belongs in stateless formatter classes writing into `ref Utf16ValueStringBuilder` with zero-allocation `switch` expressions for enum tokens.
+* **Fixed Capacity & Pooling (`AllocPage` Protection)**: Dynamic text MUST update through `FixedTextSlot`, `FixedSlotLabel`, or `ToFixedText(...)` (`SetWritten<TState>` with static delegates). Repeated DOM slots MUST pre-allocate via `FixedElementPool<TElement>` in `Bind()` using `DisplayStyle.None` for inactive elements (never `Visibility.Hidden` for cached views).
