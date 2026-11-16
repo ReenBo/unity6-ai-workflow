@@ -18,8 +18,9 @@
 
 ---
 
-## 4. SUIF DTO Standard & Zero-Realloc UI Enforcement
-* **DTO Contracts (`IViewDto`)**: Every parameterized view must receive immutable value-type DTOs (`struct : IViewDto`) composed of domain primitives and enums—never localized text, formatted strings, RichText tags, CSS tokens, or `UnityEngine.UIElements` references.
-* **ViewModels (`BaseViewModel`)**: Must emit `ReactiveProperty<TDto>` or DTO arrays cleanly without string interpolation (`$"..."`), `ZString.Format`, or UI formatting logic.
-* **Formatters (`FixedTextWriter<TState>`)**: All UI text assembly belongs in stateless formatter classes writing into `ref Utf16ValueStringBuilder` with zero-allocation `switch` expressions for enum tokens.
-* **Fixed Capacity & Pooling (`AllocPage` Protection)**: Dynamic text MUST update through `FixedTextSlot`, `FixedSlotLabel`, or `ToFixedText(...)` (`SetWritten<TState>` with static delegates). Repeated DOM slots MUST pre-allocate via `FixedElementPool<TElement>` in `Bind()` using `DisplayStyle.None` for inactive elements (never `Visibility.Hidden` for cached views).
+## 4. SUIF Universal Data & Zero-Realloc UI Enforcement
+* **Optional Data Contracts (`TData`)**: Data payloads (`struct`, `class`, `ScriptableObject`) must remain UI-agnostic and must NEVER be forced to implement framework marker interfaces (`IViewDto`).
+* **Thin ViewModel & Thin View**: Domain calculations, counters, timestamps, and catalogs belong in injected Domain Services or `ScriptableObject` assets. ViewModels (`IReactiveDataViewModel<TData>`) expose reactive properties and command forwards cleanly; Views (`BaseReactiveDataView<TViewModel, TData>` / `BaseView<TViewModel>`) contain only `[UQuery]` fields, `Binder.FixedSlot(...)` / `FixedElementPool<TElement>`, and reactive bindings.
+* **Injectable DI Formatters (Zero Global Statics)**: Avoid `static` formatting classes and `static` data arrays. Register `Singleton` formatter services caching `FixedTextWriter<T>` delegates at startup and inject them directly into Views via `[Inject] Construct(...)`.
+* **Fixed Capacity & Pooling (`AllocPage` Protection)**: Dynamic text MUST update via `Binder.FixedSlot`, `FixedSlotLabel`, or `ToFixedWritten(...)` with zero-closure delegates. Repeated DOM slots MUST pre-allocate via `FixedElementPool<TElement>` in `OnBind()`/`Bind()` using `DisplayStyle.None` (never `Visibility.Hidden`).
+* **Async / Parallel Preloading**: Heavy startup catalogs or service initialization MUST preload in parallel via `UniTask.WhenAll` paired with a cached `UILayer.Topmost` loading spinner View.
