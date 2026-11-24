@@ -1,6 +1,6 @@
 # SUIF Font Batching & PanelTextSettings Architecture (Unity 6 UI Toolkit)
 
-> **Mandatory Rule:** All UI Toolkit fonts, USS text styles, `FontAsset` configurations, and `PanelTextSettings` across SUIF applications must follow the **Single-Atlas Static SDF Batching Standard** to keep UI rendering consolidated within the shared `8`-slot GPU uber-shader budget, guarantee deterministic cross-platform WebGL2 output, and prevent runtime atlas/buffer churn.
+> **Mandatory Rule:** All UI Toolkit fonts, USS text styles, `FontAsset` configurations, and `PanelTextSettings` across SUIF applications must follow the **Pre-Populated Single-Atlas Dynamic SDF Standard (Unity 6.5+/6.6 ATG)** to keep UI rendering consolidated within the shared `8`-slot GPU uber-shader budget, guarantee deterministic cross-platform WebGL2 output, and prevent runtime atlas/buffer churn.
 
 ---
 
@@ -8,8 +8,8 @@
 
 | Axis | Mandatory Standard | Prohibited Anti-Pattern |
 | :--- | :--- | :--- |
-| **Font Asset Type** | **`-unity-font-definition`** referencing a TextCore `FontAsset` (`.asset`) + explicit `PanelTextSettings.defaultFontAsset` | Legacy **`-unity-font`** (raw `.ttf`/`.otf`) or leaving `PanelSettings.textSettings = null` |
-| **Atlas Population** | **`AtlasPopulationMode.Static`** with **`isMultiAtlasTexturesEnabled = false`** (`atlasTextures.Length == 1`) for known alphabets | **`DynamicOS`** or OS fallback fonts (`Arial`, `Microsoft YaHei`) that break WebGL/Linux determinism |
+| **Font Asset Type** | **`-unity-font-definition`** referencing a TextCore `FontAsset` (`.asset`) with embedded `sourceFontFile` + explicit `PanelTextSettings.defaultFontAsset` | Legacy **`-unity-font`** (raw `.ttf`/`.otf`) or leaving `PanelSettings.textSettings = null` |
+| **Atlas Population (Unity 6.5+/6.6 ATG)** | Pre-populated **`AtlasPopulationMode.Dynamic`** (`TryAddCharacters` baked upfront, **`isMultiAtlasTexturesEnabled = false`**, `atlasTextures.Length == 1`, `PanelTextSettings.clearDynamicDataOnBuild = false`) | **`AtlasPopulationMode.Static`** (rejected by ATG: `"Advanced text system cannot render using static font asset"`), **`DynamicOS`**, or OS fallback fonts (`Arial`, `Microsoft YaHei`) |
 | **Render Mode & Padding** | **`GlyphRenderMode.SDFAA`** (`SDFAA_HINTED` / `SDF16`) with **`atlasPadding` = `5–9` px** | **`atlasPadding == 0`** (breaks SDF AA/spread/outlines) or `RASTER*`/`SMOOTH*` bitmap modes across varied sizes |
 | **Font Weight Strategy** | Synthetic shader bold/italic (`-unity-font-style`) on the primary atlas, or explicit atlases strictly capped at **`<= 2`** concurrent `FontAsset` textures | Dozens of per-weight `fontWeightTable` assets or per-screen font swaps exhausting GPU slots |
 | **Text Effects** | `color`, `font-size`, `-unity-text-outline-*`, `text-shadow` stored in `ShaderInfoStorage` (`TextCoreSettings`) on the same atlas | Duplicating `Material` instances or adding multi-atlas RichText `<font>` / `<sprite>` tags inside hot labels |
@@ -22,7 +22,7 @@
 In Unity 6 (`UnityEngine.UIElements.UIR`), solid quads, dynamic/sprite images, and TextCore SDF text render through a single default uber-shader (`Hidden/Internal-UIRDefault`).
 
 ### 2.1. `TextureSlotManager` & Texture Slot Budget
-* `TextureSlotManager` manages **`k_MaxSlotCount = 8`** active texture bindings per GPU draw range batch (`k_SlotSize = 2` `Vector4` entries per slot in the GPU texture table carrying dimensions, `sdfScale`, `sharpness`, and `isPremultiplied` keyed by `TextureId`).
+* `TextureSlotManager` manages **`k_MaxSlotCount = 8`** active texture bindings per GPU draw range batch (`k_SlotSize = 2` `Vector4` entries per slot encoding dimensions, `sdfScale`, `sharpness`, and `isPremultiplied` keyed by `TextureId`).
 * Every distinct `TextureId` active simultaneously in a batch consumes **1** of the **8** shared slots:
   1. Panel Dynamic Atlas (`UIR` image/icon atlas).
   2. Standalone un-atlased textures/gradients or RenderTextures.
@@ -53,32 +53,37 @@ In Unity 6 (`UnityEngine.UIElements.UIR`), solid quads, dynamic/sprite images, a
 * Always configure UI Toolkit SDF `FontAsset`s with:
   * **`atlasRenderMode = GlyphRenderMode.SDFAA`** (or `SDFAA_HINTED` / `SDF16` for crisp small monospace HUD glyphs).
   * **`atlasPadding` between `5` and `9` px** (for typical `512x512`–`1024x1024` atlases).
-* **Strictly forbid `atlasPadding == 0`**: zero padding collapses SDF distance spread, degrades antialiasing at fractional/small pixel sizes (`8–11px`), and corrupts outline/underlay gradients. *(Audit flag: `SUIF`'s `Schiffbauer-Regular SDF.asset` currently has `pad=0` and `multiAtlas=True`.)*
+* **Strictly forbid `atlasPadding == 0`**: zero padding collapses SDF distance spread, degrades antialiasing at fractional/small pixel sizes (`8–11px`), and corrupts outline/underlay gradients.
 * **Prohibit Bitmap Modes (`RASTER`, `RASTER_HINTED`, `SMOOTH`, `SMOOTH_HINTED`)** when UI styles span multiple `font-size` tiers (`8px`..`26px`), because each point size must rasterize discrete glyph bitmaps, bloating atlas memory and causing multi-atlas overflow.
 
-### 3.3. `AtlasPopulationMode` & Single-Atlas Consolidation
-* **Mandatory for Known UI Alphabets (`ASCII` / `Cyrillic` / Curated FUI Symbols):**
-  * **`atlasPopulationMode = AtlasPopulationMode.Static`**
-  * **`isMultiAtlasTexturesEnabled = false`**
-  * **`atlasTextures.Length == 1`** (single static texture packed up front).
-  * Benefits: **0 ms** runtime glyph rasterization, **0** runtime CPU texture uploads (critical on single-threaded WebGL2), guaranteed glyph presence across headless Linux CI and browsers.
-* **Strictly Forbidden:** **`AtlasPopulationMode.DynamicOS`** and unbundled OS fallback fonts (`Arial`, `Microsoft YaHei`, system sans-serif).
-* **Conditional Exception (`AtlasPopulationMode.Dynamic`):** Permitted **only** on a dedicated secondary fallback `FontAsset` for unbounded user-generated input, localization dialects, or CJK text where static packing would exceed `2048x2048` VRAM budgets — always define explicit `clearDynamicDataOnBuild` behavior and keep embedded source font data scoped.
+### 3.3. Unity 6.5+/6.6 ATG: Pre-Populated `Dynamic` vs Forbidden `Static` & `DynamicOS`
+In Unity 6.5+ / 6.6 (`6000.6.7f1`), UI Toolkit uses the **Advanced Text Generator (ATG)** by default, which **rejects `AtlasPopulationMode.Static`** (`"Advanced text system cannot render using static font asset"`).
 
-### 3.4. Font Weights (`fontWeightTable`) vs Synthetic Styling
-* To achieve a **1–2 Draw Call** UI budget on WebGL/mobile, keep `fontWeightTable` empty on the primary UI `FontAsset` and let the TextCore SDF shader synthesize `-unity-font-style: bold` / `italic` from the single atlas.
-* If true geometric bold/mono fonts are artistically required, embed dedicated `Static` `SDFAA` `FontAsset`s in **one shared or capped pair (`<= 2` concurrent font atlases visible on screen)** so total batch textures stay safely inside `TextureSlotManager` limits.
+* **Mandatory Standard (`Pre-populated Dynamic` Single-Atlas):**
+  * **`atlasPopulationMode = AtlasPopulationMode.Dynamic`**
+  * Assign **`sourceFontFile`** (`.otf` / `.ttf`) cleanly so ATG can bind font face metrics.
+  * **Pre-populate all known UI glyphs** via `TryAddCharacters(...)` (ASCII + Cyrillic + allowed UI symbols) into a serialized **`1024x1024`** persistent `Texture2D` atlas sub-asset (`Apply(false, false)`).
+  * **`isMultiAtlasTexturesEnabled = false`** and **`atlasTextures.Length == 1`**.
+  * Set **`PanelTextSettings.clearDynamicDataOnBuild = false`** so all pre-baked glyphs remain in WebGL/player builds with **0 ms** runtime glyph rasterization and **0** CPU uploads on steady screens.
+* **Strictly Forbidden:**
+  * **`AtlasPopulationMode.Static`** (fails to render under Unity 6.5+/6.6 ATG).
+  * **`AtlasPopulationMode.DynamicOS`** and unbundled OS fallback fonts (`Arial`, `Microsoft YaHei`).
+
+### 3.4. Font Weights (`fontWeightTable`) vs Synthetic Styles
+* To achieve a **1–2 Draw Call** UI budget on WebGL/mobile, keep `fontWeightTable` empty on the primary `FontAsset` and let the TextCore SDF shader synthesize `-unity-font-style: bold` / `italic` from the single atlas.
+* If true geometric bold/mono fonts are artistically required, embed dedicated pre-populated `Dynamic` `SDFAA` `FontAsset`s capped at **`<= 2` concurrent font atlases visible on screen** so total batch textures stay safely inside `TextureSlotManager` limits.
 
 ### 3.5. `PanelTextSettings` Hygiene
 1. Every project `PanelSettings` asset MUST reference a dedicated `PanelTextSettings` asset (`ShowcasePanelTextSettings.asset` in Showcase).
-2. Assign `defaultFontAsset` explicitly to the primary embedded `Static` `SDFAA` `FontAsset`.
-3. Set **`enableEmojiSupport = false`** unless user chat/rich-emoji rendering is required (avoids unnecessary emoji asset probing/slots).
-4. Keep `fallbackFontAssets` minimal and project-embedded (never rely on empty/OS-default fallback discovery for static UI labels).
+2. Assign `defaultFontAsset` explicitly to the primary embedded `Dynamic` `SDFAA` `FontAsset`.
+3. Set **`clearDynamicDataOnBuild = false`** to preserve pre-baked glyph tables and atlas pixels in builds.
+4. Set **`enableEmojiSupport = false`** unless user chat/rich-emoji rendering is required (avoids unnecessary emoji asset probing/slots).
+5. Keep `fallbackFontAssets` empty or minimal and project-embedded (never rely on empty/OS-default fallback discovery for UI labels).
 
 ### 3.6. RichText Tags, Unicode Symbols & Glyph Coverage Audit
 * **Avoid inline `<font="...">` and `<sprite=...>` tags inside hot labels** (`FixedSlotLabel` grids/lists/HUD): mid-string font/sprite switches split one `Label` into multiple `RenderChainCommand`s bound to different `TextureId`s.
-* **Non-ASCII Symbol Audit:** Any character in `.uxml`, `.uss`, or C# formatters missing from `FontAsset.characterTable` triggers fallback font resolution at runtime (creating a hidden OS fallback atlas like `Microsoft YaHei - Regular Atlas` in Editor or blank boxes on Linux WebGL).
-  * Either **bake** all intentionally used symbols cleanly into the primary `Static` `FontAsset` character list, **or** replace stray Unicode glyphs (`●`, `↻`, `×`, `■`, `┼`, `»`, `›`, `▲`, `▼`, `–`, `═`, `◢`, `◣`) with standard ASCII tokens / GPU-batched procedural geometry (`MeshGenerationContext.Allocate`).
+* **Non-ASCII Symbol Audit:** Any character in `.uxml`, `.uss`, or C# formatters missing from `sourceFontFile` / `characterTable` triggers fallback font resolution at runtime (creating a hidden OS fallback atlas like `Microsoft YaHei - Regular Atlas` in Editor or blank boxes on Linux WebGL).
+  * Either keep only symbols natively present in `sourceFontFile` and pre-baked into the single atlas (`×`, `»`, `›`, `–`), **or** replace unsupported decorative Unicode glyphs (`●`, `↻`, `■`, `┼`, `▲`, `▼`, `═`, `◢`, `◣`) with ASCII tokens / GPU-batched procedural geometry (`MeshGenerationContext.Allocate`).
 
 ---
 
@@ -86,10 +91,10 @@ In Unity 6 (`UnityEngine.UIElements.UIR`), solid quads, dynamic/sprite images, a
 
 Before completing any task that creates or modifies fonts, `PanelSettings`, `.uss`, `.tss`, `.uxml`, or dynamic text components:
 
-- [ ] `PanelSettings.textSettings` is **non-null** and references an explicit project `PanelTextSettings` asset.
-- [ ] Primary UI stylesheets declare `-unity-font-definition` (zero runtime reliance on legacy `-unity-font` or missing default OS fonts).
-- [ ] Primary UI `FontAsset` uses `GlyphRenderMode.SDFAA` (or `SDFAA_HINTED`/`SDF16`), **`atlasPadding` >= `5` px**, **`AtlasPopulationMode.Static`**, and **`isMultiAtlasTexturesEnabled = false`** (`atlasTextures.Length == 1`).
-- [ ] `DynamicOS` is absent across all UI `FontAsset`s and `fallbackFontAssets`.
+- [ ] `PanelSettings.textSettings` is **non-null** and references an explicit project `PanelTextSettings` asset (`clearDynamicDataOnBuild = false`).
+- [ ] Primary UI stylesheets declare `-unity-font-definition` and unset `-unity-font: none` (zero runtime reliance on legacy `-unity-font` or missing default OS fonts).
+- [ ] Primary UI `FontAsset` uses `GlyphRenderMode.SDFAA` (or `SDFAA_HINTED`/`SDF16`), **`atlasPadding` >= `5` px**, **`AtlasPopulationMode.Dynamic` (pre-populated)** with valid `sourceFontFile`, and **`isMultiAtlasTexturesEnabled = false`** (`atlasTextures.Length == 1`).
+- [ ] Neither `Static` (unsupported on ATG) nor `DynamicOS` exists across UI `FontAsset`s and `fallbackFontAssets`.
 - [ ] Concurrent visible `FontAsset` atlas textures stay `<= 2` (total simultaneous textures strictly well within `TextureSlotManager`'s `8`-slot budget).
-- [ ] All Unicode glyphs present in `.uxml` / `.cs` text sources are verified covered by `FontAsset.characterTable` (zero OS fallback font atlas spawns in Editor `TextureRegistry` or UI Toolkit Debugger).
+- [ ] All Unicode glyphs present in `.uxml` / `.cs` text sources are verified covered by `FontAsset.characterTable` (zero OS fallback font atlas spawns in Editor `TextureRegistry`, zero ATG static-font errors, and `0` console warnings).
 - [ ] Dynamic labels use `FixedTextSlot` / `FixedSlotLabel` + single-atlas fonts so Play Mode `UIRenderDevice.GatherDrawStatistics()` shows stable `drawRangeCallCount` with zero `PageChange` or `TextureSlotsExhausted` splits.
